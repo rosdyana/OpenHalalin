@@ -2,6 +2,7 @@ import 'dart:io';
 import 'package:google_ml_kit/google_ml_kit.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:halalapp/models/ingredient.dart';
+import 'package:halalapp/services/translation_service.dart';
 
 class IngredientAnalyzerService {
   static final _textRecognizer = TextRecognizer();
@@ -66,21 +67,42 @@ class IngredientAnalyzerService {
   static Future<({List<String> ingredients, List<String> concerns})> analyzeImage(
     File imageFile,
   ) async {
+    TextRecognizer? chineseRecognizer;
     try {
       final inputImage = InputImage.fromFile(imageFile);
-      final recognizedText = await _textRecognizer.processImage(inputImage);
+      
+      // First try with default recognizer
+      var recognizedText = await _textRecognizer.processImage(inputImage);
+      
+      // If the text seems to contain Chinese characters, try with Chinese recognizer
+      if (recognizedText.text.contains(RegExp(r'[\u4e00-\u9fff]'))) {
+        try {
+          chineseRecognizer = TextRecognizer(script: TextRecognitionScript.chinese);
+          final chineseText = await chineseRecognizer.processImage(inputImage);
+          // If Chinese recognition successful, use that result instead
+          if (chineseText.text.isNotEmpty) {
+            recognizedText = chineseText;
+          }
+        } catch (e) {
+          print('Chinese text recognition failed, falling back to default result: $e');
+        }
+      }
 
       // Extract text that looks like ingredients
-      final text = recognizedText.text.toLowerCase();
+      final text = recognizedText.text;
       final lines = text.split('\n');
 
-      // Look for ingredient list markers
+      // Look for ingredient list markers in multiple languages
       int startIndex = -1;
+      final ingredientMarkers = [
+        'ingredients:', 'ingredients', 'contains:', 'contains',
+        '配料:', '配料表:', '成分:', '原料:',
+        '原材料:', 'インドレディエント:', '성분:',
+      ];
+
       for (int i = 0; i < lines.length; i++) {
-        if (lines[i].contains('ingredients:') ||
-            lines[i].contains('ingredients') ||
-            lines[i].contains('contains:') ||
-            lines[i].contains('contains')) {
+        final lowercaseLine = lines[i].toLowerCase().trim();
+        if (ingredientMarkers.any((marker) => lowercaseLine.contains(marker.toLowerCase()))) {
           startIndex = i;
           break;
         }
@@ -95,31 +117,86 @@ class IngredientAnalyzerService {
         for (int i = startIndex + 1; i < lines.length; i++) {
           final line = lines[i].trim();
           
-          // Stop if we hit another section
+          // Stop if we hit another section or empty line
           if (line.endsWith(':') || line.isEmpty) break;
 
-          // Split by common separators
-          final parts = line.split(RegExp(r'[,.]'));
+          // Split by common separators (including Chinese/Japanese commas)
+          final separators = RegExp(r'[,.、，。]');
+          final parts = line.split(separators);
+          
           for (var part in parts) {
             final ingredient = part.trim();
             if (ingredient.isNotEmpty) {
               ingredients.add(ingredient);
-
-              // Check for non-halal ingredients
-              for (var entry in _nonHalalIngredients.entries) {
-                if (ingredient.contains(entry.key)) {
-                  concerns.add('${ingredient}: ${entry.value}');
-                  break;
-                }
-              }
             }
           }
         }
       }
 
-      return (ingredients: ingredients, concerns: concerns);
+      // If no ingredients were found using markers, try to extract all text as ingredients
+      if (ingredients.isEmpty) {
+        for (var line in lines) {
+          final separators = RegExp(r'[,.、，。]');
+          final parts = line.split(separators);
+          
+          for (var part in parts) {
+            final ingredient = part.trim();
+            if (ingredient.isNotEmpty && !ingredient.endsWith(':')) {
+              ingredients.add(ingredient);
+            }
+          }
+        }
+      }
+
+      // Translate and analyze each ingredient
+      final processedIngredients = <String>[];
+      
+      for (var ingredient in ingredients) {
+        String processedIngredient = ingredient;
+        
+        // Translate non-English ingredients
+        if (!RegExp(r'^[\x00-\x7F]+$').hasMatch(ingredient)) {
+          try {
+            processedIngredient = await TranslationService.translateToEnglish(ingredient);
+            if (processedIngredient == ingredient) {
+              // If translation failed or returned same text, skip this ingredient
+              continue;
+            }
+          } catch (e) {
+            print('Translation failed for ingredient: $ingredient');
+            continue; // Skip this ingredient if translation fails
+          }
+        }
+        
+        // Add the processed ingredient
+        processedIngredients.add(processedIngredient);
+        
+        // Check for non-halal ingredients in the translated text
+        final lowercaseIngredient = processedIngredient.toLowerCase();
+        
+        // Check common non-halal ingredients
+        for (var entry in _commonNonHalalIngredients.entries) {
+          if (lowercaseIngredient.contains(entry.key)) {
+            concerns.add('$processedIngredient: ${entry.value}');
+            break;
+          }
+        }
+        
+        // Check suspicious keywords if no direct matches found
+        if (!concerns.any((concern) => concern.startsWith('$processedIngredient:'))) {
+          for (var keyword in _suspiciousKeywords) {
+            if (lowercaseIngredient.contains(keyword)) {
+              concerns.add('$processedIngredient: Contains $keyword which requires verification');
+              break;
+            }
+          }
+        }
+      }
+
+      return (ingredients: processedIngredients, concerns: concerns);
     } finally {
       _textRecognizer.close();
+      chineseRecognizer?.close();
     }
   }
 

@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
-import 'package:firebase_auth/firebase_auth.dart';
-import 'package:halalapp/widgets/custom_button.dart';
-import 'package:halalapp/screens/scanner_tab.dart';
-import 'package:halalapp/screens/products_tab.dart';
+import 'package:halalapp/services/auth_service.dart';
+import 'package:halalapp/screens/scan_screen.dart';
+import 'package:halalapp/screens/search_screen.dart';
+import 'package:halalapp/screens/favorites_screen.dart';
+import 'package:halalapp/screens/profile_screen.dart';
+import 'package:halalapp/screens/prayer_time_screen.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -12,80 +14,59 @@ class HomeScreen extends StatefulWidget {
 }
 
 class _HomeScreenState extends State<HomeScreen> {
-  int _currentIndex = 0;
+  int _selectedIndex = 0;
+  final AuthService _authService = AuthService();
 
   final List<Widget> _screens = [
-    const ScannerTab(),
-    const ProductsTab(),
-    const ProfileTab(),
+    const PrayerTimeScreen(),
+    const ScanScreen(),
+    const SearchScreen(),
+    const FavoritesScreen(),
+    const ProfileScreen(),
   ];
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Halal Food Checker'),
+        title: const Text('HalalApp'),
         actions: [
           IconButton(
             icon: const Icon(Icons.logout),
             onPressed: () async {
-              await FirebaseAuth.instance.signOut();
+              await _authService.signOut();
             },
           ),
         ],
       ),
-      body: _screens[_currentIndex],
-      bottomNavigationBar: BottomNavigationBar(
-        currentIndex: _currentIndex,
-        onTap: (index) => setState(() => _currentIndex = index),
-        items: const [
-          BottomNavigationBarItem(
+      body: _screens[_selectedIndex],
+      bottomNavigationBar: NavigationBar(
+        selectedIndex: _selectedIndex,
+        onDestinationSelected: (index) {
+          setState(() {
+            _selectedIndex = index;
+          });
+        },
+        destinations: const [
+          NavigationDestination(
+            icon: Icon(Icons.mosque),
+            label: 'Prayer',
+          ),
+          NavigationDestination(
             icon: Icon(Icons.qr_code_scanner),
             label: 'Scan',
           ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.list_alt),
-            label: 'Products',
+          NavigationDestination(
+            icon: Icon(Icons.search),
+            label: 'Search',
           ),
-          BottomNavigationBarItem(
+          NavigationDestination(
+            icon: Icon(Icons.favorite),
+            label: 'Favorites',
+          ),
+          NavigationDestination(
             icon: Icon(Icons.person),
             label: 'Profile',
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-class ProfileTab extends StatelessWidget {
-  const ProfileTab({super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    final user = FirebaseAuth.instance.currentUser;
-
-    return Padding(
-      padding: const EdgeInsets.all(16.0),
-      child: Column(
-        children: [
-          const CircleAvatar(
-            radius: 50,
-            child: Icon(Icons.person, size: 50),
-          ),
-          const SizedBox(height: 16),
-          Text(
-            user?.displayName ?? 'User',
-            style: const TextStyle(
-              fontSize: 24,
-              fontWeight: FontWeight.bold,
-            ),
-          ),
-          Text(
-            user?.email ?? '',
-            style: const TextStyle(
-              fontSize: 16,
-              color: Colors.grey,
-            ),
           ),
         ],
       ),

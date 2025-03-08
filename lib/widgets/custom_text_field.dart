@@ -1,34 +1,45 @@
 import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
 
 class CustomTextField extends StatelessWidget {
   final TextEditingController? controller;
-  final String? hintText;
+  final String hintText;
+  final int? maxLines;
+  final TextStyle? style;
+  final String? initialValue;
   final String? Function(String?)? validator;
+  final void Function(String)? onChanged;
   final bool obscureText;
   final TextInputType? keyboardType;
-  final void Function(String)? onChanged;
-  final int? maxLines;
-  final String? initialValue;
 
   const CustomTextField({
     super.key,
     this.controller,
-    this.hintText,
+    required this.hintText,
+    this.maxLines = 1,
+    this.style,
+    this.initialValue,
     this.validator,
+    this.onChanged,
     this.obscureText = false,
     this.keyboardType,
-    this.onChanged,
-    this.maxLines = 1,
-    this.initialValue,
   });
 
   @override
   Widget build(BuildContext context) {
+    final defaultStyle = GoogleFonts.notoSans(
+      textStyle: Theme.of(context).textTheme.bodyMedium,
+    );
+
     return TextFormField(
       controller: controller,
       initialValue: initialValue,
+      style: style ?? defaultStyle,
+      obscureText: obscureText,
+      keyboardType: keyboardType,
       decoration: InputDecoration(
         hintText: hintText,
+        hintStyle: (style ?? defaultStyle).copyWith(color: Colors.grey),
         border: OutlineInputBorder(
           borderRadius: BorderRadius.circular(8),
         ),
@@ -65,11 +76,9 @@ class CustomTextField extends StatelessWidget {
           vertical: 12,
         ),
       ),
-      validator: validator,
-      obscureText: obscureText,
-      keyboardType: keyboardType,
-      onChanged: onChanged,
       maxLines: maxLines,
+      validator: validator,
+      onChanged: onChanged,
     );
   }
 } 

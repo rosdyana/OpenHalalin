@@ -97,3 +97,6 @@ coverage/
 # Firebase config files
 google-services.json
 GoogleService-Info.plist
+
+# App configuration
+lib/config/app_config.dart

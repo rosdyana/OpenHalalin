@@ -5,31 +5,58 @@ import 'package:halalapp/services/ingredient_analyzer_service.dart';
 import 'package:halalapp/services/translation_service.dart';
 
 class ProductService {
-  final _productsCollection = FirebaseFirestore.instance.collection('products');
+  final FirebaseFirestore _firestore = FirebaseFirestore.instance;
+  final String collection = 'products';
   final _ingredientAnalyzer = IngredientAnalyzerService();
 
-  Future<Product?> getProductByBarcode(String barcode) async {
-    final snapshot = await _productsCollection
-        .where('barcode', isEqualTo: barcode)
-        .limit(1)
-        .get();
+  // Search products
+  Stream<List<Product>> searchProducts(String query) {
+    if (query.isEmpty) {
+      // Return recent products if no query
+      return _firestore
+          .collection(collection)
+          .orderBy('createdAt', descending: true)
+          .limit(10)
+          .snapshots()
+          .map((snapshot) {
+        return snapshot.docs.map((doc) => Product.fromFirestore(doc)).toList();
+      });
+    }
 
-    if (snapshot.docs.isEmpty) return null;
+    // Convert query to lowercase for case-insensitive search
+    query = query.toLowerCase();
 
-    return Product.fromMap({
-      'id': snapshot.docs.first.id,
-      ...snapshot.docs.first.data(),
+    // Search using the searchKeywords array
+    return _firestore
+        .collection(collection)
+        .where('searchKeywords', arrayContains: query)
+        .limit(20)
+        .snapshots()
+        .map((snapshot) {
+      return snapshot.docs.map((doc) => Product.fromFirestore(doc)).toList();
     });
   }
 
-  Future<void> addProduct(String barcode, String name, String brand, List<String> ingredients, String? imageUrl) async {
-    // First, analyze all ingredients
+  // Add a new product
+  Future<void> addProduct(
+    String barcode,
+    String name,
+    String brand,
+    List<String> ingredients,
+    String? imageUrl,
+  ) async {
+    final user = FirebaseAuth.instance.currentUser;
+    if (user == null) throw Exception('User must be logged in to add products');
+
+    // Generate search keywords
+    final List<String> searchKeywords = Product.generateSearchKeywords(name);
+    searchKeywords.addAll(Product.generateSearchKeywords(brand));
+
+    // Analyze ingredients for halal status
     final analyzedIngredients = await _ingredientAnalyzer.analyzeIngredients(ingredients);
-    
-    // If any ingredient is non-halal, the product is non-halal
     bool isHalal = true;
     List<String> concerns = [];
-    
+
     for (var (ingredient, isIngredientHalal, reason) in analyzedIngredients) {
       if (!isIngredientHalal) {
         isHalal = false;
@@ -39,23 +66,65 @@ class ProductService {
       }
     }
 
-    final product = Product(
-      id: _productsCollection.doc().id,
-      barcode: barcode,
-      name: name,
-      brand: brand,
-      ingredients: ingredients,
-      imageUrl: imageUrl,
-      isHalal: isHalal,
-      nonHalalReason: concerns.isNotEmpty ? concerns.join('\n') : null,
-      createdAt: DateTime.now(),
-      createdBy: FirebaseAuth.instance.currentUser?.uid ?? 'anonymous',
-    );
-
-    await _productsCollection.doc(product.id).set(product.toMap());
+    // Create product document
+    await _firestore.collection(collection).add({
+      'barcode': barcode,
+      'name': name,
+      'brand': brand,
+      'description': '', // Default empty description
+      'category': '', // Default empty category
+      'manufacturer': brand, // Use brand as manufacturer for now
+      'ingredients': ingredients,
+      'searchKeywords': searchKeywords,
+      'isHalal': isHalal,
+      'nonHalalReason': concerns.isNotEmpty ? concerns.join('\n') : null,
+      'imageUrl': imageUrl,
+      'createdBy': user.uid,
+      'createdAt': FieldValue.serverTimestamp(),
+      'updatedAt': FieldValue.serverTimestamp(),
+    });
   }
 
-  Future<void> updateProduct(String id, {
+  // Get product by ID
+  Future<Product?> getProduct(String id) async {
+    final doc = await _firestore.collection(collection).doc(id).get();
+    if (doc.exists) {
+      return Product.fromFirestore(doc);
+    }
+    return null;
+  }
+
+  // Update product
+  Future<void> updateProduct(Product product) async {
+    // Generate search keywords
+    final List<String> searchKeywords = Product.generateSearchKeywords(product.name);
+    searchKeywords.addAll(Product.generateSearchKeywords(product.manufacturer));
+    
+    await _firestore.collection(collection).doc(product.id).update({
+      ...product.toFirestore(),
+      'searchKeywords': searchKeywords,
+    });
+  }
+
+  // Delete product
+  Future<void> deleteProduct(String id) async {
+    await _firestore.collection(collection).doc(id).delete();
+  }
+
+  // Get product by barcode
+  Future<Product?> getProductByBarcode(String barcode) async {
+    final snapshot = await _firestore
+        .collection(collection)
+        .where('barcode', isEqualTo: barcode)
+        .limit(1)
+        .get();
+
+    if (snapshot.docs.isEmpty) return null;
+    return Product.fromFirestore(snapshot.docs.first);
+  }
+
+  // Update product fields
+  Future<void> updateProductFields(String id, {
     String? name,
     String? brand,
     List<String>? ingredients,
@@ -89,43 +158,33 @@ class ProductService {
     }
 
     if (updates.isNotEmpty) {
-      await _productsCollection.doc(id).update(updates);
+      await _firestore.collection(collection).doc(id).update(updates);
     }
   }
 
+  // Get all products
   Stream<List<Product>> getProducts() {
-    return _productsCollection
+    return _firestore
+        .collection(collection)
         .orderBy('createdAt', descending: true)
         .snapshots()
         .map((snapshot) {
-      return snapshot.docs.map((doc) {
-        return Product.fromMap({
-          'id': doc.id,
-          ...doc.data(),
-        });
-      }).toList();
+      return snapshot.docs.map((doc) => Product.fromFirestore(doc)).toList();
     });
   }
 
+  // Get user's products
   Stream<List<Product>> getUserProducts() {
     final userId = FirebaseAuth.instance.currentUser?.uid;
     if (userId == null) return Stream.value([]);
 
-    return _productsCollection
+    return _firestore
+        .collection(collection)
         .where('createdBy', isEqualTo: userId)
         .orderBy('createdAt', descending: true)
         .snapshots()
         .map((snapshot) {
-      return snapshot.docs.map((doc) {
-        return Product.fromMap({
-          'id': doc.id,
-          ...doc.data(),
-        });
-      }).toList();
+      return snapshot.docs.map((doc) => Product.fromFirestore(doc)).toList();
     });
-  }
-
-  Future<void> deleteProduct(String productId) async {
-    await _productsCollection.doc(productId).delete();
   }
 } 

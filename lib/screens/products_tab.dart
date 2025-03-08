@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:halalapp/models/product.dart';
 import 'package:halalapp/services/product_service.dart';
 import 'package:cached_network_image/cached_network_image.dart';
@@ -9,6 +10,9 @@ class ProductsTab extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final productService = ProductService();
+    final textTheme = GoogleFonts.notoSans(
+      textStyle: Theme.of(context).textTheme.bodyMedium,
+    );
 
     return StreamBuilder<List<Product>>(
       stream: productService.getProducts(),
@@ -19,15 +23,15 @@ class ProductsTab extends StatelessWidget {
 
         if (snapshot.hasError) {
           return Center(
-            child: Text('Error: ${snapshot.error}'),
+            child: Text('Error: ${snapshot.error}', style: textTheme),
           );
         }
 
         final products = snapshot.data ?? [];
 
         if (products.isEmpty) {
-          return const Center(
-            child: Text('No products found'),
+          return Center(
+            child: Text('No products found', style: textTheme),
           );
         }
 
@@ -58,8 +62,8 @@ class ProductsTab extends StatelessWidget {
                         height: 56,
                         child: Icon(Icons.image_not_supported),
                       ),
-                title: Text(product.name),
-                subtitle: Text(product.brand),
+                title: Text(product.name, style: textTheme),
+                subtitle: Text(product.brand, style: textTheme),
                 trailing: Icon(
                   product.isHalal ? Icons.check_circle : Icons.cancel,
                   color: product.isHalal ? Colors.green : Colors.red,
@@ -68,34 +72,36 @@ class ProductsTab extends StatelessWidget {
                   showDialog(
                     context: context,
                     builder: (context) => AlertDialog(
-                      title: Text(product.name),
+                      title: Text(product.name, style: textTheme.copyWith(fontSize: 18, fontWeight: FontWeight.bold)),
                       content: Column(
                         mainAxisSize: MainAxisSize.min,
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          Text('Brand: ${product.brand}'),
+                          Text('Brand: ${product.brand}', style: textTheme),
                           const SizedBox(height: 8),
                           Text(
                             product.isHalal ? '✅ Halal' : '❌ Not Halal',
-                            style: TextStyle(
+                            style: textTheme.copyWith(
                               color: product.isHalal ? Colors.green : Colors.red,
                               fontWeight: FontWeight.bold,
                             ),
                           ),
                           if (!product.isHalal && product.nonHalalReason != null) ...[
                             const SizedBox(height: 8),
-                            Text('Reason: ${product.nonHalalReason}'),
+                            Text('Reason: ${product.nonHalalReason}', style: textTheme),
                           ],
                           const SizedBox(height: 16),
-                          const Text('Ingredients:'),
+                          Text('Ingredients:', style: textTheme.copyWith(fontWeight: FontWeight.bold)),
                           const SizedBox(height: 4),
-                          ...product.ingredients.map((ingredient) => Text('• $ingredient')),
+                          ...product.ingredients.map((ingredient) => 
+                            Text('• $ingredient', style: textTheme)
+                          ),
                         ],
                       ),
                       actions: [
                         TextButton(
                           onPressed: () => Navigator.pop(context),
-                          child: const Text('Close'),
+                          child: Text('Close', style: textTheme),
                         ),
                       ],
                     ),

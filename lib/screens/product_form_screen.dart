@@ -4,6 +4,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:uuid/uuid.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:halalapp/models/product.dart';
 import 'package:halalapp/services/product_service.dart';
 import 'package:halalapp/services/ingredient_analyzer_service.dart';
@@ -129,9 +130,13 @@ class _ProductFormScreenState extends State<ProductFormScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final textTheme = GoogleFonts.notoSans(
+      textStyle: Theme.of(context).textTheme.bodyMedium,
+    );
+
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Register Product'),
+        title: Text('Register Product', style: textTheme),
       ),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(16),
@@ -140,7 +145,7 @@ class _ProductFormScreenState extends State<ProductFormScreen> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              Text('Barcode: ${widget.barcode}'),
+              Text('Barcode: ${widget.barcode}', style: textTheme),
               const SizedBox(height: 16),
               if (_imageFile != null)
                 Image.file(
@@ -150,12 +155,13 @@ class _ProductFormScreenState extends State<ProductFormScreen> {
                 ),
               CustomButton(
                 onPressed: _pickImage,
-                child: const Text('Take Product Photo'),
+                child: Text('Take Product Photo', style: textTheme),
               ),
               const SizedBox(height: 16),
               CustomTextField(
                 controller: _nameController,
                 hintText: 'Product Name',
+                style: textTheme,
                 validator: (value) {
                   if (value == null || value.isEmpty) {
                     return 'Please enter the product name';
@@ -167,6 +173,7 @@ class _ProductFormScreenState extends State<ProductFormScreen> {
               CustomTextField(
                 controller: _brandController,
                 hintText: 'Brand',
+                style: textTheme,
                 validator: (value) {
                   if (value == null || value.isEmpty) {
                     return 'Please enter the brand name';
@@ -181,6 +188,7 @@ class _ProductFormScreenState extends State<ProductFormScreen> {
                     child: CustomTextField(
                       controller: _ingredientsController,
                       hintText: 'Ingredients (comma-separated)',
+                      style: textTheme,
                       maxLines: 3,
                       validator: (value) {
                         if (value == null || value.isEmpty) {
@@ -215,9 +223,9 @@ class _ProductFormScreenState extends State<ProductFormScreen> {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      const Text(
+                      Text(
                         'Ingredient Concerns:',
-                        style: TextStyle(
+                        style: textTheme.copyWith(
                           fontWeight: FontWeight.bold,
                           color: Colors.red,
                         ),
@@ -228,7 +236,7 @@ class _ProductFormScreenState extends State<ProductFormScreen> {
                           padding: const EdgeInsets.only(bottom: 4),
                           child: Text(
                             '• ${_concerns[index]}',
-                            style: const TextStyle(color: Colors.red),
+                            style: textTheme.copyWith(color: Colors.red),
                           ),
                         );
                       }),
@@ -238,7 +246,7 @@ class _ProductFormScreenState extends State<ProductFormScreen> {
               ],
               const SizedBox(height: 16),
               SwitchListTile(
-                title: const Text('Is Halal?'),
+                title: Text('Is Halal?', style: textTheme),
                 value: _isHalal,
                 onChanged: (value) {
                   setState(() {
@@ -254,6 +262,7 @@ class _ProductFormScreenState extends State<ProductFormScreen> {
                 const SizedBox(height: 16),
                 CustomTextField(
                   hintText: 'Reason for Non-Halal',
+                  style: textTheme,
                   initialValue: _nonHalalReason,
                   onChanged: (value) => _nonHalalReason = value,
                   validator: (value) {
@@ -269,7 +278,7 @@ class _ProductFormScreenState extends State<ProductFormScreen> {
                 onPressed: _isLoading ? null : _submitForm,
                 child: _isLoading
                     ? const CircularProgressIndicator(color: Colors.white)
-                    : const Text('Submit'),
+                    : Text('Submit', style: textTheme),
               ),
             ],
           ),
