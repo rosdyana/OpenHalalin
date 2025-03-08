@@ -5,7 +5,7 @@ import 'package:halalapp/firebase_options.dart';
 import 'package:halalapp/screens/auth/login_screen.dart';
 import 'package:halalapp/screens/home_screen.dart';
 import 'package:halalapp/services/auth_service.dart';
-import 'package:halalapp/services/translation_service.dart';
+import 'package:halalapp/services/gemini_service.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -16,8 +16,8 @@ void main() async {
       options: DefaultFirebaseOptions.currentPlatform,
     );
     
-    // Initialize translation service
-    await TranslationService.initialize();
+    // Initialize Gemini service
+    await GeminiService.initialize();
     
     runApp(const MyApp());
   } catch (e) {

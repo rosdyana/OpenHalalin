@@ -1,6 +1,5 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:halalapp/models/ingredient.dart';
-import 'package:halalapp/services/translation_service.dart';
 
 class IngredientService {
   final _ingredientsCollection = FirebaseFirestore.instance.collection('ingredients');
@@ -57,39 +56,17 @@ class IngredientService {
   // Add new ingredient
   Future<void> addIngredient(String name, String languageCode, bool isHalal,
       {String? nonHalalReason}) async {
-    // First translate to English if not already in English
-    String englishName = languageCode == 'en'
-        ? name.toLowerCase()
-        : await TranslationService.translateToEnglish(name);
-
-    // Check if ingredient already exists
-    final existing = await getIngredientByEnglishName(englishName);
-    if (existing != null) {
-      // Update translations if needed
-      if (!existing.translations.containsKey(languageCode)) {
-        await _ingredientsCollection.doc(existing.id).update({
-          'translations.$languageCode': name.toLowerCase(),
-          'updatedAt': FieldValue.serverTimestamp(),
-        });
-      }
-      return;
-    }
-
+    
     // Create translations map
     Map<String, String> translations = {
       languageCode: name.toLowerCase(),
     };
 
-    // If original wasn't English, add English translation
-    if (languageCode != 'en') {
-      translations['en'] = englishName;
-    }
-
     // Create new ingredient
     final ingredient = Ingredient(
       id: _ingredientsCollection.doc().id,
       translations: translations,
-      englishName: englishName,
+      englishName: name.toLowerCase(),
       isHalal: isHalal,
       nonHalalReason: nonHalalReason,
       createdAt: DateTime.now(),

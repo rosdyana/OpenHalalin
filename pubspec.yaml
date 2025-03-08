@@ -38,13 +38,12 @@ dependencies:
   
   # Image Picker & Processing
   image_picker: ^1.0.5
-  google_ml_kit: ^0.16.3
+  google_generative_ai: ^0.2.0
   
   # Utils
   shared_preferences: ^2.2.2
   permission_handler: ^11.1.0
   uuid: ^4.3.3
-  http: ^1.1.0
 
 dev_dependencies:
   flutter_test:
