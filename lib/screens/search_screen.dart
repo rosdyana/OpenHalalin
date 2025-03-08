@@ -97,7 +97,41 @@ class _SearchScreenState extends State<SearchScreen> {
                               : Colors.red,
                         ),
                         onTap: () {
-                          // TODO: Navigate to product details
+                          showDialog(
+                            context: context,
+                            builder: (context) => AlertDialog(
+                              title: Text(product.name),
+                              content: Column(
+                                mainAxisSize: MainAxisSize.min,
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text('Brand: ${product.brand}'),
+                                  const SizedBox(height: 8),
+                                  Text(
+                                    product.isHalal ? '✅ Halal' : '❌ Not Halal',
+                                    style: TextStyle(
+                                      color: product.isHalal ? Colors.green : Colors.red,
+                                      fontWeight: FontWeight.bold,
+                                    ),
+                                  ),
+                                  if (!product.isHalal && product.nonHalalReason != null) ...[
+                                    const SizedBox(height: 8),
+                                    Text('Reason: ${product.nonHalalReason}'),
+                                  ],
+                                  const SizedBox(height: 16),
+                                  const Text('Ingredients:'),
+                                  const SizedBox(height: 4),
+                                  ...product.ingredients.map((ingredient) => Text('• $ingredient')),
+                                ],
+                              ),
+                              actions: [
+                                TextButton(
+                                  onPressed: () => Navigator.pop(context),
+                                  child: const Text('Close'),
+                                ),
+                              ],
+                            ),
+                          );
                         },
                       ),
                     );
