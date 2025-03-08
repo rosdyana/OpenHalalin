@@ -1,0 +1,51 @@
+name: halalapp
+description: "A Halal Food Checker Application"
+publish_to: 'none'
+version: 1.0.0+1
+
+environment:
+  sdk: '>=3.2.3 <4.0.0'
+
+dependencies:
+  flutter:
+    sdk: flutter
+  cupertino_icons: ^1.0.2
+  # Firebase
+  firebase_core: ^2.24.2
+  firebase_auth: ^4.15.3
+  cloud_firestore: ^4.13.6
+  firebase_storage: ^11.5.6
+  
+  # State Management
+  provider: ^6.1.1
+  
+  # UI Components
+  google_fonts: ^6.1.0
+  flutter_svg: ^2.0.9
+  cached_network_image: ^3.3.0
+  
+  # Barcode Scanner
+  mobile_scanner: ^3.5.6
+  
+  # Image Picker & Processing
+  image_picker: ^1.0.5
+  google_ml_kit: ^0.16.3
+  
+  # Utils
+  shared_preferences: ^2.2.2
+  intl: ^0.19.0
+  permission_handler: ^11.1.0
+  uuid: ^4.3.3
+  http: ^1.1.0
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^2.0.0
+
+flutter:
+  uses-material-design: true
+  
+  assets:
+    - assets/images/
+    - assets/icons/ 
