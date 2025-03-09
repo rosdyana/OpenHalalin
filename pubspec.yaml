@@ -29,6 +29,11 @@ dependencies:
   flutter_native_splash: ^2.3.9
   flutter_markdown: ^0.6.20
   
+  # Image Upload & Processing
+  cloudinary_url_gen: ^1.0.0
+  http: ^1.1.2
+  path: ^1.8.3
+  
   # Location and Prayer Times
   geolocator: ^10.1.0
   adhan: ^2.0.0

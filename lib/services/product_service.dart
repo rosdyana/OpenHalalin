@@ -47,6 +47,7 @@ class ProductService {
     String? imageUrl, {
     bool? manualIsHalal,
     String? manualNonHalalReason,
+    String? halalCertificateUrl,
   }) async {
     final user = FirebaseAuth.instance.currentUser;
     if (user == null) throw Exception('User must be logged in to add products');
@@ -93,6 +94,7 @@ class ProductService {
       'isHalal': isHalal,
       'nonHalalReason': nonHalalReason,
       'imageUrl': imageUrl,
+      'halalCertificateUrl': halalCertificateUrl,
       'createdBy': user.uid,
       'createdAt': FieldValue.serverTimestamp(),
       'updatedAt': FieldValue.serverTimestamp(),

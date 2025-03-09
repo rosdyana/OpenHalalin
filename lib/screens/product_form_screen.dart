@@ -1,7 +1,6 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:firebase_storage/firebase_storage.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:uuid/uuid.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -9,6 +8,7 @@ import 'package:flutter_markdown/flutter_markdown.dart';
 import 'package:halalapp/models/product.dart';
 import 'package:halalapp/services/product_service.dart';
 import 'package:halalapp/services/ingredient_analyzer_service.dart';
+import 'package:halalapp/services/cloudinary_service.dart';
 import 'package:halalapp/widgets/custom_button.dart';
 import 'package:halalapp/widgets/custom_text_field.dart';
 
@@ -27,25 +27,86 @@ class ProductFormScreen extends StatefulWidget {
 class _ProductFormScreenState extends State<ProductFormScreen> {
   final _formKey = GlobalKey<FormState>();
   final _productService = ProductService();
+  final _cloudinaryService = CloudinaryService();
   final _nameController = TextEditingController();
   final _brandController = TextEditingController();
   final _ingredientsController = TextEditingController();
   final _nonHalalReasonController = TextEditingController();
   bool _isHalal = true;
   File? _imageFile;
+  File? _halalCertificateFile;
   File? _ingredientsImageFile;
   bool _isLoading = false;
   bool _isAnalyzing = false;
   List<String> _concerns = [];
 
   Future<void> _pickImage() async {
-    final picker = ImagePicker();
-    final pickedFile = await picker.pickImage(source: ImageSource.camera);
+    try {
+      final picker = ImagePicker();
+      final pickedFile = await picker.pickImage(
+        source: ImageSource.camera,
+        imageQuality: 80,
+        maxWidth: 1200,
+      );
 
-    if (pickedFile != null) {
-      setState(() {
-        _imageFile = File(pickedFile.path);
-      });
+      debugPrint('Image picked: ${pickedFile?.path}');
+
+      if (pickedFile != null) {
+        setState(() {
+          _imageFile = File(pickedFile.path);
+        });
+        debugPrint('Image file set: ${_imageFile?.path}');
+      } else {
+        debugPrint('No image selected');
+      }
+    } catch (e, stackTrace) {
+      debugPrint('Error picking product image:');
+      debugPrint(e.toString());
+      debugPrint(stackTrace.toString());
+      
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Error selecting image. Please try again.'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+    }
+  }
+
+  Future<void> _pickHalalCertificate() async {
+    try {
+      final picker = ImagePicker();
+      final pickedFile = await picker.pickImage(
+        source: ImageSource.camera,
+        imageQuality: 80,
+        maxWidth: 1200,
+      );
+
+      debugPrint('Certificate picked: ${pickedFile?.path}');
+
+      if (pickedFile != null) {
+        setState(() {
+          _halalCertificateFile = File(pickedFile.path);
+        });
+        debugPrint('Certificate file set: ${_halalCertificateFile?.path}');
+      } else {
+        debugPrint('No certificate selected');
+      }
+    } catch (e, stackTrace) {
+      debugPrint('Error picking halal certificate:');
+      debugPrint(e.toString());
+      debugPrint(stackTrace.toString());
+      
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Error selecting certificate. Please try again.'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
     }
   }
 
@@ -81,18 +142,6 @@ class _ProductFormScreenState extends State<ProductFormScreen> {
     }
   }
 
-  Future<String?> _uploadImage(String productId) async {
-    if (_imageFile == null) return null;
-
-    final ref = FirebaseStorage.instance
-        .ref()
-        .child('products')
-        .child('$productId.jpg');
-
-    await ref.putFile(_imageFile!);
-    return await ref.getDownloadURL();
-  }
-
   Future<void> _submitForm() async {
     if (!_formKey.currentState!.validate()) return;
 
@@ -103,7 +152,56 @@ class _ProductFormScreenState extends State<ProductFormScreen> {
       if (user == null) return;
 
       final productId = const Uuid().v4();
-      final imageUrl = await _uploadImage(productId);
+      debugPrint('Starting product submission with ID: $productId');
+      
+      // Upload product image to Cloudinary
+      String? imageUrl;
+      if (_imageFile != null) {
+        try {
+          debugPrint('Uploading product image...');
+          imageUrl = await _cloudinaryService.uploadProductImage(_imageFile!, productId);
+          debugPrint('Product image URL: $imageUrl');
+        } catch (e) {
+          debugPrint('Failed to upload product image: $e');
+          if (mounted) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(
+                content: Text('Failed to upload product image. Please try again.'),
+                backgroundColor: Colors.red,
+              ),
+            );
+          }
+          return;
+        }
+      } else {
+        debugPrint('No product image selected');
+      }
+
+      // Upload halal certificate if product is halal
+      String? halalCertificateUrl;
+      if (_isHalal && _halalCertificateFile != null) {
+        try {
+          debugPrint('Uploading halal certificate...');
+          halalCertificateUrl = await _cloudinaryService.uploadHalalCertificate(
+            _halalCertificateFile!,
+            productId,
+          );
+          debugPrint('Halal certificate URL: $halalCertificateUrl');
+        } catch (e) {
+          debugPrint('Failed to upload halal certificate: $e');
+          if (mounted) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(
+                content: Text('Failed to upload halal certificate. Please try again.'),
+                backgroundColor: Colors.red,
+              ),
+            );
+          }
+          return;
+        }
+      } else {
+        debugPrint('No halal certificate to upload: isHalal=$_isHalal, hasFile=${_halalCertificateFile != null}');
+      }
 
       final ingredients = _ingredientsController.text
           .split(',')
@@ -111,6 +209,7 @@ class _ProductFormScreenState extends State<ProductFormScreen> {
           .where((e) => e.isNotEmpty)
           .toList();
 
+      debugPrint('Saving product to database...');
       await _productService.addProduct(
         widget.barcode,
         _nameController.text.trim(),
@@ -119,10 +218,37 @@ class _ProductFormScreenState extends State<ProductFormScreen> {
         imageUrl,
         manualIsHalal: _isHalal,
         manualNonHalalReason: !_isHalal ? _nonHalalReasonController.text.trim() : null,
+        halalCertificateUrl: halalCertificateUrl,
       );
+      debugPrint('Product saved successfully');
 
       if (mounted) {
-        Navigator.pop(context);
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Product added successfully!'),
+            backgroundColor: Colors.green,
+          ),
+        );
+        
+        // Replace current screen with search screen
+        Navigator.pushNamedAndRemoveUntil(
+          context,
+          '/search', // or whatever your search route name is
+          (route) => false, // This removes all previous routes
+        );
+      }
+    } catch (e, stackTrace) {
+      debugPrint('Error submitting product:');
+      debugPrint(e.toString());
+      debugPrint(stackTrace.toString());
+      
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Error saving product: ${e.toString()}'),
+            backgroundColor: Colors.red,
+          ),
+        );
       }
     } finally {
       if (mounted) {
@@ -285,6 +411,25 @@ ${_concerns.map((concern) => "* $concern").join('\n')}
                         value: _isHalal,
                         onChanged: (value) => setState(() => _isHalal = value),
                       ),
+                      if (_isHalal) ...[
+                        const SizedBox(height: 16),
+                        if (_halalCertificateFile != null)
+                          Image.file(
+                            _halalCertificateFile!,
+                            height: 150,
+                            fit: BoxFit.cover,
+                          ),
+                        const SizedBox(height: 8),
+                        CustomButton(
+                          onPressed: _pickHalalCertificate,
+                          child: Text(
+                            _halalCertificateFile != null
+                                ? 'Change Halal Certificate'
+                                : 'Upload Halal Certificate',
+                            style: textTheme,
+                          ),
+                        ),
+                      ],
                       if (!_isHalal) ...[
                         const SizedBox(height: 8),
                         CustomTextField(
