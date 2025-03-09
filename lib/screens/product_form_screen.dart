@@ -7,17 +7,25 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:flutter_markdown/flutter_markdown.dart';
 import 'package:halalapp/models/product.dart';
 import 'package:halalapp/services/product_service.dart';
-import 'package:halalapp/services/ingredient_analyzer_service.dart';
+import 'package:halalapp/services/gemini_service.dart';
 import 'package:halalapp/services/cloudinary_service.dart';
 import 'package:halalapp/widgets/custom_button.dart';
 import 'package:halalapp/widgets/custom_text_field.dart';
 
 class ProductFormScreen extends StatefulWidget {
   final String barcode;
+  final String? productName;
+  final String? brandName;
+  final bool? isHalal;
+  final String? halalReason;
 
   const ProductFormScreen({
     super.key,
     required this.barcode,
+    this.productName,
+    this.brandName,
+    this.isHalal,
+    this.halalReason,
   });
 
   @override
@@ -39,6 +47,24 @@ class _ProductFormScreenState extends State<ProductFormScreen> {
   bool _isLoading = false;
   bool _isAnalyzing = false;
   List<String> _concerns = [];
+
+  @override
+  void initState() {
+    super.initState();
+    // Pre-fill data from Open Food Facts if available
+    if (widget.productName != null) {
+      _nameController.text = widget.productName!;
+    }
+    if (widget.brandName != null) {
+      _brandController.text = widget.brandName!;
+    }
+    if (widget.isHalal != null) {
+      _isHalal = widget.isHalal!;
+      if (widget.halalReason != null) {
+        _nonHalalReasonController.text = widget.halalReason!;
+      }
+    }
+  }
 
   Future<void> _pickImage() async {
     try {
@@ -111,19 +137,29 @@ class _ProductFormScreenState extends State<ProductFormScreen> {
   }
 
   Future<void> _scanIngredients() async {
+    debugPrint('Starting ingredient scan...');
     final picker = ImagePicker();
-    final pickedFile = await picker.pickImage(source: ImageSource.camera);
+    final pickedFile = await picker.pickImage(
+      source: ImageSource.camera,
+      imageQuality: 80,
+      maxWidth: 1200,
+    );
+
+    debugPrint('Image picked: ${pickedFile?.path}');
 
     if (pickedFile != null) {
       setState(() {
         _ingredientsImageFile = File(pickedFile.path);
         _isAnalyzing = true;
       });
+      debugPrint('Set ingredients image file: ${_ingredientsImageFile?.path}');
 
       try {
-        final result = await IngredientAnalyzerService.analyzeImage(
+        debugPrint('Starting ingredient analysis...');
+        final result = await GeminiService.analyzeImage(
           _ingredientsImageFile!,
         );
+        debugPrint('Analysis complete. Found ${result.ingredients.length} ingredients and ${result.concerns.length} concerns');
 
         setState(() {
           _ingredientsController.text = result.ingredients.join(', ');
@@ -134,11 +170,28 @@ class _ProductFormScreenState extends State<ProductFormScreen> {
             _nonHalalReasonController.text = result.concerns.join('\n');
           }
         });
+        debugPrint('Updated UI with ingredients: ${_ingredientsController.text}');
+        debugPrint('Updated concerns: $_concerns');
+      } catch (e, stackTrace) {
+        debugPrint('Error during ingredient analysis:');
+        debugPrint(e.toString());
+        debugPrint(stackTrace.toString());
+        
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text('Error analyzing ingredients: ${e.toString()}'),
+              backgroundColor: Colors.red,
+            ),
+          );
+        }
       } finally {
         setState(() {
           _isAnalyzing = false;
         });
       }
+    } else {
+      debugPrint('No image selected for ingredient scan');
     }
   }
 

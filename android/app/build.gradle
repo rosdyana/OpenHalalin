@@ -52,9 +52,13 @@ android {
         // You can update the following values to match your application needs.
         // For more information, see: https://docs.flutter.dev/deployment/android#reviewing-the-gradle-build-configuration.
         minSdkVersion flutter.minSdkVersion
-        targetSdkVersion 34
+        targetSdkVersion 35
         versionCode flutterVersionCode.toInteger()
         versionName flutterVersionName
+        
+        // Add these lines to help with resource linking
+        resConfigs "en"
+        vectorDrawables.useSupportLibrary = true
     }
 
     buildTypes {
@@ -62,7 +66,26 @@ android {
             // TODO: Add your own signing config for the release build.
             // Signing with the debug keys for now, so `flutter run --release` works.
             signingConfig signingConfigs.debug
+            // Add these lines for release optimization
+            minifyEnabled true
+            shrinkResources true
+            proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
         }
+    }
+
+    // Add this to prevent resource linking issues
+    aaptOptions {
+        cruncherEnabled = false
+    }
+
+    // Add this to increase memory for the build process
+    dexOptions {
+        javaMaxHeapSize "4g"
+    }
+
+    lint {
+        disable 'InvalidPackage'
+        checkReleaseBuilds false
     }
 }
 

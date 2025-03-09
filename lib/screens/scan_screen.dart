@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/foundation.dart';
 import 'package:mobile_scanner/mobile_scanner.dart';
 import 'package:halalapp/services/product_service.dart';
+import 'package:halalapp/services/open_food_facts_service.dart';
 import 'package:halalapp/screens/product_form_screen.dart';
 import 'package:flutter_markdown/flutter_markdown.dart';
 
@@ -16,6 +18,7 @@ class _ScanScreenState extends State<ScanScreen> {
   bool _isScanning = true;
   bool _showDisclaimer = true;
   final _productService = ProductService();
+  final _openFoodFactsService = OpenFoodFactsService();
 
   Widget _buildDisclaimer() {
     return Container(
@@ -166,12 +169,20 @@ class _ScanScreenState extends State<ScanScreen> {
 
   Future<void> _handleBarcode(String barcode) async {
     try {
-      // Look up product in database
+      if (kDebugMode) {
+        debugPrint('\n==================== SCAN RESULT ====================');
+        debugPrint('Scanned barcode: $barcode');
+      }
+
+      // First check our database
       final product = await _productService.getProductByBarcode(barcode);
 
       if (!mounted) return;
 
       if (product != null) {
+        if (kDebugMode) {
+          debugPrint('Product found in local database');
+        }
         // Show product details
         showDialog(
           context: context,
@@ -185,6 +196,8 @@ class _ScanScreenState extends State<ScanScreen> {
                   MarkdownBody(
                     data: '''
 ### Product Details
+
+**Barcode:** ${product.barcode}
 
 **Brand:** ${product.brand}
 
@@ -216,16 +229,62 @@ ${product.ingredients.map((ingredient) => "* $ingredient").join('\n')}
           ),
         );
       } else {
-        // Navigate to product registration form
+        if (kDebugMode) {
+          debugPrint('Product not found in local database, checking Open Food Facts...');
+        }
+        // Check Open Food Facts API
+        final openFoodFactsResult = await _openFoodFactsService.getProductByBarcode(barcode);
+        final openFoodFactsData = openFoodFactsResult.product;
+        
+        if (kDebugMode) {
+          debugPrint('\nProcessing Open Food Facts data:');
+          debugPrint('Raw data: $openFoodFactsData');
+        }
+        
+        if (!mounted) return;
+
+        // Get product name in English if available, otherwise use generic product_name
+        final productName = openFoodFactsData?['product_name_en'] ?? 
+                          openFoodFactsData?['product_name'] ?? 
+                          '';
+        if (kDebugMode) {
+          debugPrint('\nProduct Name Details:');
+          debugPrint('Final Product Name: $productName');
+          debugPrint('- product_name_en: ${openFoodFactsData?['product_name_en']}');
+          debugPrint('- product_name: ${openFoodFactsData?['product_name']}');
+        }
+        
+        // Get brand names (can be comma-separated)
+        final brandName = openFoodFactsData?['brands'] ?? '';
+        if (kDebugMode) {
+          debugPrint('\nBrand Name Details:');
+          debugPrint('Final Brand Name: $brandName');
+          debugPrint('- brands field: ${openFoodFactsData?['brands']}');
+        }
+
+        if (openFoodFactsData == null && kDebugMode) {
+          debugPrint('No data found in Open Food Facts');
+        }
+
+        // Navigate to product registration form with pre-filled data if available
         await Navigator.push(
           context,
           MaterialPageRoute(
-            builder: (context) => ProductFormScreen(barcode: barcode),
+            builder: (context) => ProductFormScreen(
+              barcode: barcode,
+              productName: productName,
+              brandName: brandName,
+              isHalal: openFoodFactsResult.isHalal,
+              halalReason: openFoodFactsResult.halalReason,
+            ),
           ),
         );
         setState(() => _isScanning = true);
       }
     } catch (e) {
+      if (kDebugMode) {
+        debugPrint('Error processing barcode: $e');
+      }
       if (!mounted) return;
       
       ScaffoldMessenger.of(context).showSnackBar(

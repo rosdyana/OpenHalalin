@@ -113,9 +113,11 @@ class PrayerTimeService {
       final cachedDate = DateTime.parse(cached['date'] as String);
       
       // If cache is from today and location hasn't changed significantly
+      // cache live is 1 hour
       if (cachedDate.year == today.year && 
           cachedDate.month == today.month && 
           cachedDate.day == today.day &&
+          cachedDate.hour >= DateTime.now().hour - 1 &&
           !_hasLocationChangedSignificantly(currentPosition)) {
             
         final params = CalculationMethod.muslim_world_league.getParameters();

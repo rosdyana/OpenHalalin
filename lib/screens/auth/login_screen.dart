@@ -86,7 +86,7 @@ class _LoginScreenState extends State<LoginScreen> {
                   }
                 },
                 icon: Image.asset(
-                  'assets/icons/google_logo.png',
+                  'assets/icons/google_icon.png',
                   height: 24,
                 ),
                 label: const Text(

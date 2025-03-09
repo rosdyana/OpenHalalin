@@ -37,7 +37,7 @@ class _ChatbotScreenState extends State<ChatbotScreen> {
 
     try {
       final model = GenerativeModel(
-        model: 'gemini-1.5-flash',
+        model: AppConfig.geminiVersion,
         apiKey: AppConfig.geminiApiKey,
       );
 
