@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:halalapp/services/auth_service.dart';
 import 'package:halalapp/screens/scan_screen.dart';
 import 'package:halalapp/screens/search_screen.dart';
-import 'package:halalapp/screens/favorites_screen.dart';
+import 'package:halalapp/screens/chatbot_screen.dart';
 import 'package:halalapp/screens/profile_screen.dart';
 import 'package:halalapp/screens/prayer_time_screen.dart';
 
@@ -21,7 +21,7 @@ class _HomeScreenState extends State<HomeScreen> {
     const PrayerTimeScreen(),
     const ScanScreen(),
     const SearchScreen(),
-    const FavoritesScreen(),
+    const ChatbotScreen(),
     const ProfileScreen(),
   ];
 
@@ -61,8 +61,8 @@ class _HomeScreenState extends State<HomeScreen> {
             label: 'Search',
           ),
           NavigationDestination(
-            icon: Icon(Icons.favorite),
-            label: 'Favorites',
+            icon: Icon(Icons.chat),
+            label: 'Ask',
           ),
           NavigationDestination(
             icon: Icon(Icons.person),

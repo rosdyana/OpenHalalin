@@ -27,6 +27,7 @@ dependencies:
   flutter_svg: ^2.0.9
   cached_network_image: ^3.3.0
   flutter_native_splash: ^2.3.9
+  flutter_markdown: ^0.6.20
   
   # Location and Prayer Times
   geolocator: ^10.1.0
