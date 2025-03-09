@@ -1,8 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:halalapp/screens/auth/register_screen.dart';
-import 'package:halalapp/widgets/custom_button.dart';
-import 'package:halalapp/widgets/custom_text_field.dart';
 import 'package:halalapp/services/auth_service.dart';
 
 class LoginScreen extends StatefulWidget {

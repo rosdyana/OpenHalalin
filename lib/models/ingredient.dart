@@ -54,4 +54,4 @@ class Ingredient {
   String getTranslation(String languageCode) {
     return translations[languageCode] ?? englishName;
   }
-} 
+}

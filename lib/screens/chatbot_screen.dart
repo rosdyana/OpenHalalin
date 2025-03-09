@@ -51,12 +51,12 @@ Question: $question
 
       final content = [Content.text(prompt)];
       final response = await model.generateContent(content);
-      
+
       final responseText = response.text;
       if (responseText == null || responseText.isEmpty) {
         throw Exception('Received empty response from AI');
       }
-      
+
       setState(() {
         _messages.add(ChatMessage(text: responseText, isQuestion: false));
         _isLoading = false;
@@ -66,7 +66,8 @@ Question: $question
     } catch (e) {
       setState(() {
         _messages.add(ChatMessage(
-          text: 'Sorry, I encountered an error while processing your question. Please try again.',
+          text:
+              'Sorry, I encountered an error while processing your question. Please try again.',
           isQuestion: false,
         ));
         _isLoading = false;
@@ -101,7 +102,7 @@ Question: $question
         right: message.isQuestion ? 8 : 32,
         bottom: 8,
       ),
-      color: message.isQuestion 
+      color: message.isQuestion
           ? Theme.of(context).colorScheme.primaryContainer
           : Theme.of(context).cardColor,
       child: Padding(
@@ -112,7 +113,7 @@ Question: $question
             Row(
               children: [
                 CircleAvatar(
-                  backgroundColor: message.isQuestion 
+                  backgroundColor: message.isQuestion
                       ? Theme.of(context).colorScheme.primary
                       : Colors.green,
                   child: Icon(
@@ -211,4 +212,4 @@ Question: $question
       ),
     );
   }
-} 
+}

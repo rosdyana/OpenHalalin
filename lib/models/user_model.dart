@@ -54,4 +54,4 @@ class UserModel {
       savedProducts: savedProducts ?? this.savedProducts,
     );
   }
-} 
+}

@@ -11,9 +11,10 @@ class CloudinaryService {
   factory CloudinaryService() => _instance;
 
   late final Cloudinary cloudinary;
-  
+
   CloudinaryService._internal() {
-    debugPrint('Initializing Cloudinary with cloud name: ${AppConfig.cloudinaryCloudName}');
+    debugPrint(
+        'Initializing Cloudinary with cloud name: ${AppConfig.cloudinaryCloudName}');
     // Initialize Cloudinary with configuration from AppConfig
     cloudinary = Cloudinary.fromCloudName(
       cloudName: AppConfig.cloudinaryCloudName,
@@ -31,8 +32,7 @@ class CloudinaryService {
       }
 
       final url = Uri.parse(
-        'https://api.cloudinary.com/v1_1/${AppConfig.cloudinaryCloudName}/image/upload'
-      );
+          'https://api.cloudinary.com/v1_1/${AppConfig.cloudinaryCloudName}/image/upload');
 
       final request = http.MultipartRequest('POST', url)
         ..fields['upload_preset'] = AppConfig.cloudinaryUploadPreset
@@ -49,14 +49,15 @@ class CloudinaryService {
 
       final response = await request.send();
       final responseData = await response.stream.bytesToString();
-      
+
       if (response.statusCode == 200) {
         final jsonResponse = json.decode(responseData) as Map<String, dynamic>;
         final secureUrl = jsonResponse['secure_url'] as String;
         debugPrint('Product image upload successful. URL: $secureUrl');
         return secureUrl;
       } else {
-        throw Exception('Failed to upload image: ${response.statusCode} - $responseData');
+        throw Exception(
+            'Failed to upload image: ${response.statusCode} - $responseData');
       }
     } catch (e, stackTrace) {
       debugPrint('Error uploading product image to Cloudinary:');
@@ -66,19 +67,20 @@ class CloudinaryService {
     }
   }
 
-  Future<String?> uploadHalalCertificate(File imageFile, String productId) async {
+  Future<String?> uploadHalalCertificate(
+      File imageFile, String productId) async {
     try {
       debugPrint('Starting halal certificate upload for ID: $productId');
       debugPrint('Certificate file exists: ${imageFile.existsSync()}');
       debugPrint('Certificate file path: ${imageFile.path}');
 
       if (!imageFile.existsSync()) {
-        throw Exception('Certificate file does not exist at path: ${imageFile.path}');
+        throw Exception(
+            'Certificate file does not exist at path: ${imageFile.path}');
       }
 
       final url = Uri.parse(
-        'https://api.cloudinary.com/v1_1/${AppConfig.cloudinaryCloudName}/image/upload'
-      );
+          'https://api.cloudinary.com/v1_1/${AppConfig.cloudinaryCloudName}/image/upload');
 
       final request = http.MultipartRequest('POST', url)
         ..fields['upload_preset'] = AppConfig.cloudinaryUploadPreset
@@ -95,14 +97,15 @@ class CloudinaryService {
 
       final response = await request.send();
       final responseData = await response.stream.bytesToString();
-      
+
       if (response.statusCode == 200) {
         final jsonResponse = json.decode(responseData) as Map<String, dynamic>;
         final secureUrl = jsonResponse['secure_url'] as String;
         debugPrint('Halal certificate upload successful. URL: $secureUrl');
         return secureUrl;
       } else {
-        throw Exception('Failed to upload certificate: ${response.statusCode} - $responseData');
+        throw Exception(
+            'Failed to upload certificate: ${response.statusCode} - $responseData');
       }
     } catch (e, stackTrace) {
       debugPrint('Error uploading halal certificate to Cloudinary:');
@@ -111,4 +114,4 @@ class CloudinaryService {
       rethrow;
     }
   }
-} 
+}

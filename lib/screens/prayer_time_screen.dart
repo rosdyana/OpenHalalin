@@ -1,7 +1,6 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:adhan/adhan.dart';
-import 'package:geolocator/geolocator.dart';
 import 'package:halalapp/services/prayer_time_service.dart';
 
 class PrayerTimeScreen extends StatefulWidget {
@@ -40,7 +39,8 @@ class _PrayerTimeScreenState extends State<PrayerTimeScreen> {
   Future<void> _loadPrayerTimes() async {
     try {
       setState(() => _isLoading = true);
-      final (prayerTimes, locationName) = await _prayerTimeService!.getPrayerTimes();
+      final (prayerTimes, locationName) =
+          await _prayerTimeService!.getPrayerTimes();
       setState(() {
         _prayerTimes = prayerTimes;
         _locationName = locationName;
@@ -72,7 +72,8 @@ class _PrayerTimeScreenState extends State<PrayerTimeScreen> {
     final minutes = duration.inMinutes.remainder(60);
     final seconds = duration.inSeconds.remainder(60);
     setState(() {
-      _timeUntilNext = '${hours.toString().padLeft(2, '0')}:${minutes.toString().padLeft(2, '0')}:${seconds.toString().padLeft(2, '0')}';
+      _timeUntilNext =
+          '${hours.toString().padLeft(2, '0')}:${minutes.toString().padLeft(2, '0')}:${seconds.toString().padLeft(2, '0')}';
     });
   }
 
@@ -119,8 +120,8 @@ class _PrayerTimeScreenState extends State<PrayerTimeScreen> {
                   Text(
                     nextPrayer,
                     style: Theme.of(context).textTheme.headlineMedium?.copyWith(
-                      fontWeight: FontWeight.bold,
-                    ),
+                          fontWeight: FontWeight.bold,
+                        ),
                   ),
                   const SizedBox(height: 8),
                   Text(
@@ -130,9 +131,9 @@ class _PrayerTimeScreenState extends State<PrayerTimeScreen> {
                   Text(
                     _timeUntilNext,
                     style: Theme.of(context).textTheme.headlineSmall?.copyWith(
-                      fontWeight: FontWeight.bold,
-                      color: Theme.of(context).primaryColor,
-                    ),
+                          fontWeight: FontWeight.bold,
+                          color: Theme.of(context).primaryColor,
+                        ),
                   ),
                 ],
               ),
@@ -171,8 +172,8 @@ class _PrayerTimeScreenState extends State<PrayerTimeScreen> {
                   Text(
                     _locationName,
                     style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                      fontWeight: FontWeight.w500,
-                    ),
+                          fontWeight: FontWeight.w500,
+                        ),
                   ),
                 ],
               ),
@@ -210,4 +211,4 @@ class _PrayerTimeScreenState extends State<PrayerTimeScreen> {
       ),
     );
   }
-} 
+}

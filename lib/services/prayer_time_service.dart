@@ -45,7 +45,8 @@ class PrayerTimeService {
     if (cachedCoordinatesJson == null) return true;
 
     try {
-      final cachedCoordinates = json.decode(cachedCoordinatesJson) as Map<String, dynamic>;
+      final cachedCoordinates =
+          json.decode(cachedCoordinatesJson) as Map<String, dynamic>;
       final cachedLat = cachedCoordinates['latitude'] as double;
       final cachedLng = cachedCoordinates['longitude'] as double;
 
@@ -73,16 +74,20 @@ class PrayerTimeService {
     final prayerTimes = PrayerTimes(coordinates, dateComponents, params);
 
     // Get location name
-    List<Placemark> placemarks = await placemarkFromCoordinates(position.latitude, position.longitude);
+    List<Placemark> placemarks =
+        await placemarkFromCoordinates(position.latitude, position.longitude);
     final placemark = placemarks.first;
-    String locationName = '${placemark.locality ?? ''}, ${placemark.country ?? ''}'.trim();
+    String locationName =
+        '${placemark.locality ?? ''}, ${placemark.country ?? ''}'.trim();
     if (locationName == ',') locationName = 'Unknown Location';
 
     // Cache the coordinates
-    await _prefs.setString(_CACHE_COORDINATES_KEY, json.encode({
-      'latitude': position.latitude,
-      'longitude': position.longitude,
-    }));
+    await _prefs.setString(
+        _CACHE_COORDINATES_KEY,
+        json.encode({
+          'latitude': position.latitude,
+          'longitude': position.longitude,
+        }));
 
     return {
       'fajr': prayerTimes.fajr.millisecondsSinceEpoch,
@@ -96,59 +101,61 @@ class PrayerTimeService {
     };
   }
 
+  // Add this helper method
+  PrayerTimes _createPrayerTimes(Coordinates coordinates, DateTime date) {
+    final params = CalculationMethod.muslim_world_league.getParameters();
+    params.madhab = Madhab.shafi;
+    return PrayerTimes(
+      coordinates,
+      DateComponents(date.year, date.month, date.day),
+      params,
+    );
+  }
+
+  // Modify the cache validation to use proper time comparison
+  bool _isCacheValid(DateTime cachedDate, Position currentPosition) {
+    final now = DateTime.now();
+    final difference = now.difference(cachedDate);
+    return difference.inHours <= 1 &&
+        cachedDate.year == now.year &&
+        cachedDate.month == now.month &&
+        cachedDate.day == now.day &&
+        !_hasLocationChangedSignificantly(currentPosition);
+  }
+
   Future<(PrayerTimes, String)> getPrayerTimes() async {
     final now = DateTime.now();
     final today = DateTime(now.year, now.month, now.day);
-    
+
     // Get current position first to check if location has changed
     final currentPosition = await _getCurrentLocation();
-    final coordinates = Coordinates(currentPosition.latitude, currentPosition.longitude);
-    
+    final coordinates =
+        Coordinates(currentPosition.latitude, currentPosition.longitude);
+
     // Try to get cached data
     final cachedJson = _prefs.getString(_CACHE_KEY);
     final cachedLocation = _prefs.getString(_CACHE_LOCATION_KEY);
-    
+
     if (cachedJson != null && cachedLocation != null) {
       final cached = json.decode(cachedJson) as Map<String, dynamic>;
       final cachedDate = DateTime.parse(cached['date'] as String);
-      
-      // If cache is from today and location hasn't changed significantly
-      // cache live is 1 hour
-      if (cachedDate.year == today.year && 
-          cachedDate.month == today.month && 
-          cachedDate.day == today.day &&
-          cachedDate.hour >= DateTime.now().hour - 1 &&
-          !_hasLocationChangedSignificantly(currentPosition)) {
-            
-        final params = CalculationMethod.muslim_world_league.getParameters();
-        params.madhab = Madhab.shafi;
-        
-        final prayerTimes = PrayerTimes(
-          coordinates,
-          DateComponents(today.year, today.month, today.day),
-          params,
-        );
-        
+
+      // If cache is valid
+      if (_isCacheValid(cachedDate, currentPosition)) {
+        final prayerTimes = _createPrayerTimes(coordinates, today);
         return (prayerTimes, cachedLocation);
       }
     }
-    
+
     // If no cache, cache is old, or location has changed significantly, fetch new data
     final data = await _getPrayerTimesData();
-    
+
     // Cache the new data
     await _prefs.setString(_CACHE_KEY, json.encode(data));
     await _prefs.setString(_CACHE_LOCATION_KEY, data['location'] as String);
-    
-    final params = CalculationMethod.muslim_world_league.getParameters();
-    params.madhab = Madhab.shafi;
-    
-    final prayerTimes = PrayerTimes(
-      coordinates,
-      DateComponents(today.year, today.month, today.day),
-      params,
-    );
-    
+
+    final prayerTimes = _createPrayerTimes(coordinates, today);
+
     return (prayerTimes, data['location'] as String);
   }
 
@@ -159,7 +166,7 @@ class PrayerTimeService {
 
   String getNextPrayer(PrayerTimes prayerTimes) {
     final next = prayerTimes.nextPrayer();
-    
+
     switch (next) {
       case Prayer.fajr:
         return 'Fajr';
@@ -184,4 +191,4 @@ class PrayerTimeService {
     if (nextPrayer == null) return Duration.zero;
     return nextPrayer.difference(now);
   }
-} 
+}

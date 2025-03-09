@@ -48,7 +48,7 @@ class BarcodeScannerService {
     try {
       final completer = Completer<String?>();
       final controller = MobileScannerController();
-      
+
       if (context.mounted) {
         await showDialog(
           context: context,
@@ -137,4 +137,4 @@ class BarcodeScannerService {
       return null;
     }
   }
-} 
+}

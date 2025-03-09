@@ -105,7 +105,7 @@ class _ScanScreenState extends State<ScanScreen> {
                         for (final barcode in barcodes) {
                           if (!_isScanning) return;
                           _isScanning = false;
-                          
+
                           // Handle the scanned barcode
                           _handleBarcode(barcode.rawValue ?? '');
                         }
@@ -230,30 +230,33 @@ ${product.ingredients.map((ingredient) => "* $ingredient").join('\n')}
         );
       } else {
         if (kDebugMode) {
-          debugPrint('Product not found in local database, checking Open Food Facts...');
+          debugPrint(
+              'Product not found in local database, checking Open Food Facts...');
         }
         // Check Open Food Facts API
-        final openFoodFactsResult = await _openFoodFactsService.getProductByBarcode(barcode);
+        final openFoodFactsResult =
+            await _openFoodFactsService.getProductByBarcode(barcode);
         final openFoodFactsData = openFoodFactsResult.product;
-        
+
         if (kDebugMode) {
           debugPrint('\nProcessing Open Food Facts data:');
           debugPrint('Raw data: $openFoodFactsData');
         }
-        
+
         if (!mounted) return;
 
         // Get product name in English if available, otherwise use generic product_name
-        final productName = openFoodFactsData?['product_name_en'] ?? 
-                          openFoodFactsData?['product_name'] ?? 
-                          '';
+        final productName = openFoodFactsData?['product_name_en'] ??
+            openFoodFactsData?['product_name'] ??
+            '';
         if (kDebugMode) {
           debugPrint('\nProduct Name Details:');
           debugPrint('Final Product Name: $productName');
-          debugPrint('- product_name_en: ${openFoodFactsData?['product_name_en']}');
+          debugPrint(
+              '- product_name_en: ${openFoodFactsData?['product_name_en']}');
           debugPrint('- product_name: ${openFoodFactsData?['product_name']}');
         }
-        
+
         // Get brand names (can be comma-separated)
         final brandName = openFoodFactsData?['brands'] ?? '';
         if (kDebugMode) {
@@ -286,7 +289,7 @@ ${product.ingredients.map((ingredient) => "* $ingredient").join('\n')}
         debugPrint('Error processing barcode: $e');
       }
       if (!mounted) return;
-      
+
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text('Error processing barcode: ${e.toString()}'),
@@ -302,4 +305,4 @@ ${product.ingredients.map((ingredient) => "* $ingredient").join('\n')}
     controller.dispose();
     super.dispose();
   }
-} 
+}

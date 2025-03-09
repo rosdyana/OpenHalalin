@@ -5,7 +5,6 @@ import 'package:image_picker/image_picker.dart';
 import 'package:uuid/uuid.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:flutter_markdown/flutter_markdown.dart';
-import 'package:halalapp/models/product.dart';
 import 'package:halalapp/services/product_service.dart';
 import 'package:halalapp/services/gemini_service.dart';
 import 'package:halalapp/services/cloudinary_service.dart';
@@ -89,7 +88,7 @@ class _ProductFormScreenState extends State<ProductFormScreen> {
       debugPrint('Error picking product image:');
       debugPrint(e.toString());
       debugPrint(stackTrace.toString());
-      
+
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
@@ -124,7 +123,7 @@ class _ProductFormScreenState extends State<ProductFormScreen> {
       debugPrint('Error picking halal certificate:');
       debugPrint(e.toString());
       debugPrint(stackTrace.toString());
-      
+
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
@@ -159,24 +158,26 @@ class _ProductFormScreenState extends State<ProductFormScreen> {
         final result = await GeminiService.analyzeImage(
           _ingredientsImageFile!,
         );
-        debugPrint('Analysis complete. Found ${result.ingredients.length} ingredients and ${result.concerns.length} concerns');
+        debugPrint(
+            'Analysis complete. Found ${result.ingredients.length} ingredients and ${result.concerns.length} concerns');
 
         setState(() {
           _ingredientsController.text = result.ingredients.join(', ');
           _concerns = result.concerns;
-          
+
           if (result.concerns.isNotEmpty) {
             _isHalal = false;
             _nonHalalReasonController.text = result.concerns.join('\n');
           }
         });
-        debugPrint('Updated UI with ingredients: ${_ingredientsController.text}');
+        debugPrint(
+            'Updated UI with ingredients: ${_ingredientsController.text}');
         debugPrint('Updated concerns: $_concerns');
       } catch (e, stackTrace) {
         debugPrint('Error during ingredient analysis:');
         debugPrint(e.toString());
         debugPrint(stackTrace.toString());
-        
+
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
@@ -206,20 +207,22 @@ class _ProductFormScreenState extends State<ProductFormScreen> {
 
       final productId = const Uuid().v4();
       debugPrint('Starting product submission with ID: $productId');
-      
+
       // Upload product image to Cloudinary
       String? imageUrl;
       if (_imageFile != null) {
         try {
           debugPrint('Uploading product image...');
-          imageUrl = await _cloudinaryService.uploadProductImage(_imageFile!, productId);
+          imageUrl = await _cloudinaryService.uploadProductImage(
+              _imageFile!, productId);
           debugPrint('Product image URL: $imageUrl');
         } catch (e) {
           debugPrint('Failed to upload product image: $e');
           if (mounted) {
             ScaffoldMessenger.of(context).showSnackBar(
               const SnackBar(
-                content: Text('Failed to upload product image. Please try again.'),
+                content:
+                    Text('Failed to upload product image. Please try again.'),
                 backgroundColor: Colors.red,
               ),
             );
@@ -245,7 +248,8 @@ class _ProductFormScreenState extends State<ProductFormScreen> {
           if (mounted) {
             ScaffoldMessenger.of(context).showSnackBar(
               const SnackBar(
-                content: Text('Failed to upload halal certificate. Please try again.'),
+                content: Text(
+                    'Failed to upload halal certificate. Please try again.'),
                 backgroundColor: Colors.red,
               ),
             );
@@ -253,7 +257,8 @@ class _ProductFormScreenState extends State<ProductFormScreen> {
           return;
         }
       } else {
-        debugPrint('No halal certificate to upload: isHalal=$_isHalal, hasFile=${_halalCertificateFile != null}');
+        debugPrint(
+            'No halal certificate to upload: isHalal=$_isHalal, hasFile=${_halalCertificateFile != null}');
       }
 
       final ingredients = _ingredientsController.text
@@ -270,7 +275,8 @@ class _ProductFormScreenState extends State<ProductFormScreen> {
         ingredients,
         imageUrl,
         manualIsHalal: _isHalal,
-        manualNonHalalReason: !_isHalal ? _nonHalalReasonController.text.trim() : null,
+        manualNonHalalReason:
+            !_isHalal ? _nonHalalReasonController.text.trim() : null,
         halalCertificateUrl: halalCertificateUrl,
       );
       debugPrint('Product saved successfully');
@@ -282,7 +288,7 @@ class _ProductFormScreenState extends State<ProductFormScreen> {
             backgroundColor: Colors.green,
           ),
         );
-        
+
         // Replace current screen with search screen
         Navigator.pushNamedAndRemoveUntil(
           context,
@@ -294,7 +300,7 @@ class _ProductFormScreenState extends State<ProductFormScreen> {
       debugPrint('Error submitting product:');
       debugPrint(e.toString());
       debugPrint(stackTrace.toString());
-      
+
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
@@ -487,7 +493,8 @@ ${_concerns.map((concern) => "* $concern").join('\n')}
                         const SizedBox(height: 8),
                         CustomTextField(
                           controller: _nonHalalReasonController,
-                          hintText: 'Please specify why this product is not halal',
+                          hintText:
+                              'Please specify why this product is not halal',
                           style: textTheme,
                           maxLines: 3,
                         ),
@@ -516,4 +523,4 @@ ${_concerns.map((concern) => "* $concern").join('\n')}
       ),
     );
   }
-} 
+}

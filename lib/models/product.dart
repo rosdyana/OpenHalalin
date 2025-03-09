@@ -78,14 +78,14 @@ class Product {
   static List<String> generateSearchKeywords(String text) {
     final words = text.toLowerCase().split(RegExp(r'[^\w\s]'));
     final keywords = <String>{};
-    
+
     for (var word in words) {
       word = word.trim();
       if (word.isEmpty) continue;
-      
+
       // Add full word
       keywords.add(word);
-      
+
       // Add partial matches (minimum 3 characters)
       if (word.length > 3) {
         for (var i = 3; i < word.length; i++) {
@@ -93,7 +93,7 @@ class Product {
         }
       }
     }
-    
+
     return keywords.toList();
   }
-} 
+}

@@ -9,19 +9,19 @@ import 'package:halalapp/services/gemini_service.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  
+
   try {
     // Initialize Firebase and other services
     await Firebase.initializeApp(
       options: DefaultFirebaseOptions.currentPlatform,
     );
-    
+
     // Initialize Gemini service
     await GeminiService.initialize();
-    
+
     runApp(const MyApp());
   } catch (e) {
-    print('Failed to initialize app: $e');
+    debugPrint('Failed to initialize app: $e');
     // Show error screen or handle initialization error
   }
 }
@@ -43,11 +43,11 @@ class MyApp extends StatelessWidget {
           if (snapshot.connectionState == ConnectionState.waiting) {
             return const Center(child: CircularProgressIndicator());
           }
-          
+
           if (snapshot.hasData) {
             return const HomeScreen();
           }
-          
+
           return const LoginScreen();
         },
       ),
@@ -79,4 +79,4 @@ class AuthWrapper extends StatelessWidget {
       },
     );
   }
-} 
+}
