@@ -44,8 +44,10 @@ class ProductService {
     String name,
     String brand,
     List<String> ingredients,
-    String? imageUrl,
-  ) async {
+    String? imageUrl, {
+    bool? manualIsHalal,
+    String? manualNonHalalReason,
+  }) async {
     final user = FirebaseAuth.instance.currentUser;
     if (user == null) throw Exception('User must be logged in to add products');
 
@@ -53,18 +55,29 @@ class ProductService {
     final List<String> searchKeywords = Product.generateSearchKeywords(name);
     searchKeywords.addAll(Product.generateSearchKeywords(brand));
 
-    // Analyze ingredients for halal status
-    final analyzedIngredients = await _ingredientAnalyzer.analyzeIngredients(ingredients);
-    bool isHalal = true;
-    List<String> concerns = [];
+    bool isHalal;
+    String? nonHalalReason;
 
-    for (var (ingredient, isIngredientHalal, reason) in analyzedIngredients) {
-      if (!isIngredientHalal) {
-        isHalal = false;
-        if (reason != null) {
-          concerns.add('$ingredient: $reason');
+    // If manual status is provided, use it
+    if (manualIsHalal != null) {
+      isHalal = manualIsHalal;
+      nonHalalReason = !manualIsHalal ? manualNonHalalReason : null;
+    } else {
+      // Analyze ingredients for halal status
+      final analyzedIngredients = await _ingredientAnalyzer.analyzeIngredients(ingredients);
+      isHalal = true;
+      List<String> concerns = [];
+
+      for (var (ingredient, isIngredientHalal, reason) in analyzedIngredients) {
+        if (!isIngredientHalal) {
+          isHalal = false;
+          if (reason != null) {
+            concerns.add('$ingredient: $reason');
+          }
         }
       }
+      
+      nonHalalReason = concerns.isNotEmpty ? concerns.join('\n') : null;
     }
 
     // Create product document
@@ -78,7 +91,7 @@ class ProductService {
       'ingredients': ingredients,
       'searchKeywords': searchKeywords,
       'isHalal': isHalal,
-      'nonHalalReason': concerns.isNotEmpty ? concerns.join('\n') : null,
+      'nonHalalReason': nonHalalReason,
       'imageUrl': imageUrl,
       'createdBy': user.uid,
       'createdAt': FieldValue.serverTimestamp(),

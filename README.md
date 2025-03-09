@@ -4,12 +4,9 @@ HalalApp is a Flutter-based mobile application designed to help users find and v
 
 ## Features
 
-- Halal food and restaurant finder
-- Product halal certification verification
-- User reviews and ratings
-- Bookmark favorite places
-- Prayer times and qibla direction
-- Community contributions
+- Prayer Time
+- Halal Scanner
+- Muslim Bot
 
 ## Getting Started
 
