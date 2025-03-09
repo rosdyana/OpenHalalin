@@ -12,15 +12,21 @@ class PrayerTimeScreen extends StatefulWidget {
 }
 
 class _PrayerTimeScreenState extends State<PrayerTimeScreen> {
-  final PrayerTimeService _prayerTimeService = PrayerTimeService();
+  PrayerTimeService? _prayerTimeService;
   PrayerTimes? _prayerTimes;
   Timer? _timer;
   String _timeUntilNext = '';
-  Position? _currentPosition;
+  String _locationName = '';
+  bool _isLoading = true;
 
   @override
   void initState() {
     super.initState();
+    _initializeService();
+  }
+
+  Future<void> _initializeService() async {
+    _prayerTimeService = await PrayerTimeService.create();
     _loadPrayerTimes();
     _startTimer();
   }
@@ -33,14 +39,16 @@ class _PrayerTimeScreenState extends State<PrayerTimeScreen> {
 
   Future<void> _loadPrayerTimes() async {
     try {
-      final prayerTimes = await _prayerTimeService.getPrayerTimes();
-      final position = await Geolocator.getCurrentPosition();
+      setState(() => _isLoading = true);
+      final (prayerTimes, locationName) = await _prayerTimeService!.getPrayerTimes();
       setState(() {
         _prayerTimes = prayerTimes;
-        _currentPosition = position;
+        _locationName = locationName;
+        _isLoading = false;
         _updateTimeUntilNext();
       });
     } catch (e) {
+      setState(() => _isLoading = false);
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text('Error: ${e.toString()}')),
@@ -59,7 +67,7 @@ class _PrayerTimeScreenState extends State<PrayerTimeScreen> {
 
   void _updateTimeUntilNext() {
     if (_prayerTimes == null) return;
-    final duration = _prayerTimeService.getTimeUntilNextPrayer(_prayerTimes!);
+    final duration = _prayerTimeService!.getTimeUntilNextPrayer(_prayerTimes!);
     final hours = duration.inHours;
     final minutes = duration.inMinutes.remainder(60);
     final seconds = duration.inSeconds.remainder(60);
@@ -70,11 +78,27 @@ class _PrayerTimeScreenState extends State<PrayerTimeScreen> {
 
   @override
   Widget build(BuildContext context) {
-    if (_prayerTimes == null || _currentPosition == null) {
+    if (_isLoading) {
       return const Center(child: CircularProgressIndicator());
     }
 
-    final nextPrayer = _prayerTimeService.getNextPrayer(_prayerTimes!);
+    if (_prayerTimes == null) {
+      return Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            const Text('Unable to load prayer times'),
+            const SizedBox(height: 16),
+            ElevatedButton(
+              onPressed: _loadPrayerTimes,
+              child: const Text('Retry'),
+            ),
+          ],
+        ),
+      );
+    }
+
+    final nextPrayer = _prayerTimeService!.getNextPrayer(_prayerTimes!);
 
     return RefreshIndicator(
       onRefresh: _loadPrayerTimes,
@@ -145,12 +169,10 @@ class _PrayerTimeScreenState extends State<PrayerTimeScreen> {
                   ),
                   const SizedBox(height: 8),
                   Text(
-                    'Lat: ${_currentPosition!.latitude.toStringAsFixed(4)}',
-                    style: Theme.of(context).textTheme.bodyMedium,
-                  ),
-                  Text(
-                    'Long: ${_currentPosition!.longitude.toStringAsFixed(4)}',
-                    style: Theme.of(context).textTheme.bodyMedium,
+                    _locationName,
+                    style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                      fontWeight: FontWeight.w500,
+                    ),
                   ),
                 ],
               ),
@@ -162,8 +184,8 @@ class _PrayerTimeScreenState extends State<PrayerTimeScreen> {
   }
 
   Widget _buildPrayerTimeRow(String name, DateTime? time) {
-    final formattedTime = _prayerTimeService.formatPrayerTime(time);
-    final isNext = _prayerTimeService.getNextPrayer(_prayerTimes!) == name;
+    final formattedTime = _prayerTimeService!.formatPrayerTime(time);
+    final isNext = _prayerTimeService!.getNextPrayer(_prayerTimes!) == name;
 
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 8),
