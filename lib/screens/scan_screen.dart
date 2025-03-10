@@ -5,6 +5,7 @@ import 'package:halalapp/services/product_service.dart';
 import 'package:halalapp/services/open_food_facts_service.dart';
 import 'package:halalapp/screens/product_form_screen.dart';
 import 'package:flutter_markdown/flutter_markdown.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
 class ScanScreen extends StatefulWidget {
   const ScanScreen({super.key});
@@ -21,47 +22,49 @@ class _ScanScreenState extends State<ScanScreen> {
   final _openFoodFactsService = OpenFoodFactsService();
 
   Widget _buildDisclaimer() {
+    final l10n = AppLocalizations.of(context)!;
+
     return Container(
       color: Colors.black87,
       child: SafeArea(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            const Padding(
-              padding: EdgeInsets.all(24.0),
+            Padding(
+              padding: const EdgeInsets.all(24.0),
               child: Column(
                 children: [
-                  Icon(
+                  const Icon(
                     Icons.info_outline,
                     color: Colors.white,
                     size: 48,
                   ),
-                  SizedBox(height: 16),
+                  const SizedBox(height: 16),
                   Text(
                     'Bismillah',
-                    style: TextStyle(
+                    style: const TextStyle(
                       color: Colors.white,
                       fontSize: 24,
                       fontWeight: FontWeight.bold,
                     ),
                     textAlign: TextAlign.center,
                   ),
-                  SizedBox(height: 16),
+                  const SizedBox(height: 16),
                   Text(
-                    'This Halal Scanner uses artificial intelligence to analyze product ingredients. While we strive for accuracy, the results should be used as a reference only.',
-                    style: TextStyle(color: Colors.white),
+                    l10n.scanProduct,
+                    style: const TextStyle(color: Colors.white),
                     textAlign: TextAlign.center,
                   ),
-                  SizedBox(height: 8),
+                  const SizedBox(height: 8),
                   Text(
-                    'InshaAllah, with your knowledge and understanding, you can make informed decisions about the products you consume.',
-                    style: TextStyle(color: Colors.white),
+                    l10n.scanBarcode,
+                    style: const TextStyle(color: Colors.white),
                     textAlign: TextAlign.center,
                   ),
-                  SizedBox(height: 8),
+                  const SizedBox(height: 8),
                   Text(
-                    'Please verify with official Halal certification when available.',
-                    style: TextStyle(
+                    l10n.halalStatus,
+                    style: const TextStyle(
                       color: Colors.white,
                       fontWeight: FontWeight.bold,
                     ),
@@ -80,7 +83,7 @@ class _ScanScreenState extends State<ScanScreen> {
                   vertical: 16,
                 ),
               ),
-              child: const Text('I Understand'),
+              child: Text(l10n.confirm),
             ),
           ],
         ),
@@ -90,6 +93,8 @@ class _ScanScreenState extends State<ScanScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+
     return Scaffold(
       body: Stack(
         children: [
@@ -168,6 +173,8 @@ class _ScanScreenState extends State<ScanScreen> {
   }
 
   Future<void> _handleBarcode(String barcode) async {
+    final l10n = AppLocalizations.of(context)!;
+
     try {
       if (kDebugMode) {
         debugPrint('\n==================== SCAN RESULT ====================');
@@ -223,7 +230,7 @@ ${product.ingredients.map((ingredient) => "* $ingredient").join('\n')}
                   Navigator.pop(context);
                   setState(() => _isScanning = true);
                 },
-                child: const Text('Close'),
+                child: Text(l10n.cancel),
               ),
             ],
           ),

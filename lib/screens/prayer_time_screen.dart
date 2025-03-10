@@ -2,6 +2,7 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:adhan/adhan.dart';
 import 'package:halalapp/services/prayer_time_service.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
 class PrayerTimeScreen extends StatefulWidget {
   const PrayerTimeScreen({super.key});
@@ -51,7 +52,9 @@ class _PrayerTimeScreenState extends State<PrayerTimeScreen> {
       setState(() => _isLoading = false);
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Error: ${e.toString()}')),
+          SnackBar(
+              content: Text(
+                  '${AppLocalizations.of(context)!.error}: ${e.toString()}')),
         );
       }
     }
@@ -79,8 +82,10 @@ class _PrayerTimeScreenState extends State<PrayerTimeScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+
     if (_isLoading) {
-      return const Center(child: CircularProgressIndicator());
+      return Center(child: Text(l10n.loading));
     }
 
     if (_prayerTimes == null) {
@@ -88,11 +93,11 @@ class _PrayerTimeScreenState extends State<PrayerTimeScreen> {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            const Text('Unable to load prayer times'),
+            Text(l10n.error),
             const SizedBox(height: 16),
             ElevatedButton(
               onPressed: _loadPrayerTimes,
-              child: const Text('Retry'),
+              child: Text(l10n.tryAgain),
             ),
           ],
         ),
@@ -113,19 +118,19 @@ class _PrayerTimeScreenState extends State<PrayerTimeScreen> {
               child: Column(
                 children: [
                   Text(
-                    'Next Prayer',
+                    l10n.prayerTimes,
                     style: Theme.of(context).textTheme.titleMedium,
                   ),
                   const SizedBox(height: 8),
                   Text(
-                    nextPrayer,
+                    _getPrayerNameLocalized(nextPrayer, l10n),
                     style: Theme.of(context).textTheme.headlineMedium?.copyWith(
                           fontWeight: FontWeight.bold,
                         ),
                   ),
                   const SizedBox(height: 8),
                   Text(
-                    'Time until next prayer:',
+                    l10n.timeUntilNextPrayer,
                     style: Theme.of(context).textTheme.titleSmall,
                   ),
                   Text(
@@ -147,12 +152,12 @@ class _PrayerTimeScreenState extends State<PrayerTimeScreen> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  _buildPrayerTimeRow('Fajr', _prayerTimes!.fajr),
+                  _buildPrayerTimeRow(l10n.fajr, _prayerTimes!.fajr),
                   _buildPrayerTimeRow('Sunrise', _prayerTimes!.sunrise),
-                  _buildPrayerTimeRow('Dhuhr', _prayerTimes!.dhuhr),
-                  _buildPrayerTimeRow('Asr', _prayerTimes!.asr),
-                  _buildPrayerTimeRow('Maghrib', _prayerTimes!.maghrib),
-                  _buildPrayerTimeRow('Isha', _prayerTimes!.isha),
+                  _buildPrayerTimeRow(l10n.dhuhr, _prayerTimes!.dhuhr),
+                  _buildPrayerTimeRow(l10n.asr, _prayerTimes!.asr),
+                  _buildPrayerTimeRow(l10n.maghrib, _prayerTimes!.maghrib),
+                  _buildPrayerTimeRow(l10n.isha, _prayerTimes!.isha),
                 ],
               ),
             ),
@@ -165,7 +170,7 @@ class _PrayerTimeScreenState extends State<PrayerTimeScreen> {
               child: Column(
                 children: [
                   Text(
-                    'Location',
+                    l10n.location,
                     style: Theme.of(context).textTheme.titleMedium,
                   ),
                   const SizedBox(height: 8),
@@ -182,6 +187,23 @@ class _PrayerTimeScreenState extends State<PrayerTimeScreen> {
         ],
       ),
     );
+  }
+
+  String _getPrayerNameLocalized(String prayerName, AppLocalizations l10n) {
+    switch (prayerName) {
+      case 'Fajr':
+        return l10n.fajr;
+      case 'Dhuhr':
+        return l10n.dhuhr;
+      case 'Asr':
+        return l10n.asr;
+      case 'Maghrib':
+        return l10n.maghrib;
+      case 'Isha':
+        return l10n.isha;
+      default:
+        return prayerName;
+    }
   }
 
   Widget _buildPrayerTimeRow(String name, DateTime? time) {

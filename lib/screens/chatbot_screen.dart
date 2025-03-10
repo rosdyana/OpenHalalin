@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:google_generative_ai/google_generative_ai.dart';
 import 'package:halalapp/config/app_config.dart';
 import 'package:flutter_markdown/flutter_markdown.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
 class ChatMessage {
   final String text;
@@ -64,14 +65,15 @@ Question: $question
 
       _scrollToBottom();
     } catch (e) {
-      setState(() {
-        _messages.add(ChatMessage(
-          text:
-              'Sorry, I encountered an error while processing your question. Please try again.',
-          isQuestion: false,
-        ));
-        _isLoading = false;
-      });
+      if (mounted) {
+        setState(() {
+          _messages.add(ChatMessage(
+            text: AppLocalizations.of(context)!.error,
+            isQuestion: false,
+          ));
+          _isLoading = false;
+        });
+      }
       debugPrint('Error in chatbot: $e');
     }
   }
@@ -96,6 +98,8 @@ Question: $question
   }
 
   Widget _buildMessageBubble(ChatMessage message) {
+    final l10n = AppLocalizations.of(context)!;
+    
     return Card(
       margin: EdgeInsets.only(
         left: message.isQuestion ? 32 : 8,
@@ -123,7 +127,7 @@ Question: $question
                 ),
                 const SizedBox(width: 8),
                 Text(
-                  message.isQuestion ? 'You' : 'Islamic Assistant',
+                  message.isQuestion ? l10n.profile : l10n.chatbot,
                   style: const TextStyle(
                     fontWeight: FontWeight.bold,
                     fontSize: 16,
@@ -146,6 +150,8 @@ Question: $question
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+    
     return Scaffold(
       body: Column(
         children: [
@@ -156,10 +162,10 @@ Question: $question
               children: [
                 ..._messages.map(_buildMessageBubble),
                 if (_isLoading)
-                  const Center(
+                  Center(
                     child: Padding(
-                      padding: EdgeInsets.all(16.0),
-                      child: CircularProgressIndicator(),
+                      padding: const EdgeInsets.all(16.0),
+                      child: Text(l10n.loading),
                     ),
                   ),
               ],
@@ -184,7 +190,7 @@ Question: $question
                     child: TextField(
                       controller: _messageController,
                       decoration: InputDecoration(
-                        hintText: 'Ask a question about Islam...',
+                        hintText: l10n.chatbotPlaceholder,
                         border: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(24),
                         ),

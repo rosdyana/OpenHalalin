@@ -5,6 +5,7 @@ import 'package:halalapp/screens/search_screen.dart';
 import 'package:halalapp/screens/chatbot_screen.dart';
 import 'package:halalapp/screens/profile_screen.dart';
 import 'package:halalapp/screens/prayer_time_screen.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
 class HomeScreen extends StatefulWidget {
   final int initialTab;
@@ -38,9 +39,11 @@ class _HomeScreenState extends State<HomeScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+    
     return Scaffold(
       appBar: AppBar(
-        title: const Text('HalalApp'),
+        title: Text(l10n.appName),
         actions: [
           IconButton(
             icon: const Icon(Icons.logout),
@@ -58,26 +61,26 @@ class _HomeScreenState extends State<HomeScreen> {
             _selectedIndex = index;
           });
         },
-        destinations: const [
+        destinations: [
           NavigationDestination(
-            icon: Icon(Icons.mosque),
-            label: 'Prayer',
+            icon: const Icon(Icons.mosque),
+            label: l10n.prayerTimes,
           ),
           NavigationDestination(
-            icon: Icon(Icons.qr_code_scanner),
-            label: 'Scan',
+            icon: const Icon(Icons.qr_code_scanner),
+            label: l10n.scan,
           ),
           NavigationDestination(
-            icon: Icon(Icons.search),
-            label: 'Search',
+            icon: const Icon(Icons.search),
+            label: l10n.search,
           ),
           NavigationDestination(
-            icon: Icon(Icons.chat),
-            label: 'Ask',
+            icon: const Icon(Icons.chat),
+            label: l10n.chatbot,
           ),
           NavigationDestination(
-            icon: Icon(Icons.person),
-            label: 'Profile',
+            icon: const Icon(Icons.person),
+            label: l10n.profile,
           ),
         ],
       ),

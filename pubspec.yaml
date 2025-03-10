@@ -9,6 +9,8 @@ environment:
 dependencies:
   flutter:
     sdk: flutter
+  flutter_localizations:
+    sdk: flutter
   cupertino_icons: ^1.0.2
   # Firebase
   firebase_core: ^2.24.2
@@ -60,6 +62,7 @@ dev_dependencies:
 
 flutter:
   uses-material-design: true
+  generate: true  # Enable generation of localized strings
   
   assets:
     - assets/images/

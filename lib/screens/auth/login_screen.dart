@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:halalapp/services/auth_service.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -27,9 +28,11 @@ class _LoginScreenState extends State<LoginScreen> {
         password: _passwordController.text.trim(),
       );
     } on FirebaseAuthException catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(e.message ?? 'An error occurred')),
-      );
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(e.message ?? AppLocalizations.of(context)!.error)),
+        );
+      }
     } finally {
       if (mounted) setState(() => _isLoading = false);
     }
@@ -37,6 +40,8 @@ class _LoginScreenState extends State<LoginScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+    
     return Scaffold(
       body: SafeArea(
         child: Padding(
@@ -53,18 +58,18 @@ class _LoginScreenState extends State<LoginScreen> {
               const SizedBox(height: 48),
               
               // Welcome Text
-              const Text(
-                'Welcome to HalalApp',
-                style: TextStyle(
+              Text(
+                l10n.loginTitle,
+                style: const TextStyle(
                   fontSize: 24,
                   fontWeight: FontWeight.bold,
                 ),
                 textAlign: TextAlign.center,
               ),
               const SizedBox(height: 12),
-              const Text(
-                'Your trusted companion for halal food and products',
-                style: TextStyle(
+              Text(
+                l10n.appName,
+                style: const TextStyle(
                   fontSize: 16,
                   color: Colors.grey,
                 ),
@@ -86,9 +91,9 @@ class _LoginScreenState extends State<LoginScreen> {
                   'assets/icons/google_icon.png',
                   height: 24,
                 ),
-                label: const Text(
-                  'Continue with Google',
-                  style: TextStyle(
+                label: Text(
+                  l10n.loginWithGoogle,
+                  style: const TextStyle(
                     fontSize: 16,
                     fontWeight: FontWeight.w600,
                   ),

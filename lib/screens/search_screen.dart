@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:halalapp/models/product.dart';
 import 'package:halalapp/services/product_service.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
 class SearchScreen extends StatefulWidget {
   const SearchScreen({super.key});
@@ -16,6 +17,8 @@ class _SearchScreenState extends State<SearchScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+
     return Scaffold(
       body: Column(
         children: [
@@ -24,7 +27,7 @@ class _SearchScreenState extends State<SearchScreen> {
             child: TextField(
               controller: _searchController,
               decoration: InputDecoration(
-                hintText: 'Search for products...',
+                hintText: l10n.searchHint,
                 prefixIcon: const Icon(Icons.search),
                 suffixIcon: _searchController.text.isNotEmpty
                     ? IconButton(
@@ -49,12 +52,12 @@ class _SearchScreenState extends State<SearchScreen> {
               stream: _productService.searchProducts(_searchController.text),
               builder: (context, snapshot) {
                 if (snapshot.connectionState == ConnectionState.waiting) {
-                  return const Center(child: CircularProgressIndicator());
+                  return Center(child: Text(l10n.loading));
                 }
 
                 if (snapshot.hasError) {
                   return Center(
-                    child: Text('Error: ${snapshot.error}'),
+                    child: Text('${l10n.error}: ${snapshot.error}'),
                   );
                 }
 
@@ -62,12 +65,12 @@ class _SearchScreenState extends State<SearchScreen> {
 
                 if (products.isEmpty) {
                   if (_searchController.text.isEmpty) {
-                    return const Center(
-                      child: Text('Start typing to search for products'),
+                    return Center(
+                      child: Text(l10n.searchHint),
                     );
                   } else {
-                    return const Center(
-                      child: Text('No products found'),
+                    return Center(
+                      child: Text(l10n.noResults),
                     );
                   }
                 }
@@ -150,9 +153,9 @@ class _SearchScreenState extends State<SearchScreen> {
                                                         height: 200,
                                                         width: 200,
                                                         color: Colors.grey[200],
-                                                        child: const Center(
-                                                          child:
-                                                              CircularProgressIndicator(),
+                                                        child: Center(
+                                                          child: Text(
+                                                              l10n.loading),
                                                         ),
                                                       );
                                                     },
@@ -162,7 +165,7 @@ class _SearchScreenState extends State<SearchScreen> {
                                               const SizedBox(height: 16),
                                             ],
                                             Text(
-                                              'Brand: ${product.brand}',
+                                              '${l10n.productName}: ${product.brand}',
                                               style:
                                                   const TextStyle(fontSize: 16),
                                             ),
@@ -182,8 +185,8 @@ class _SearchScreenState extends State<SearchScreen> {
                                               ),
                                               child: Text(
                                                 product.isHalal
-                                                    ? '✅ Halal'
-                                                    : '❌ Not Halal',
+                                                    ? '✅ ${l10n.halal}'
+                                                    : '❌ ${l10n.notHalal}',
                                                 style: TextStyle(
                                                   color: product.isHalal
                                                       ? Colors.green[700]
@@ -196,9 +199,9 @@ class _SearchScreenState extends State<SearchScreen> {
                                                 product.halalCertificateUrl !=
                                                     null) ...[
                                               const SizedBox(height: 16),
-                                              const Text(
-                                                'Halal Certificate:',
-                                                style: TextStyle(
+                                              Text(
+                                                l10n.halalCertificate,
+                                                style: const TextStyle(
                                                   fontWeight: FontWeight.bold,
                                                   fontSize: 16,
                                                 ),
@@ -234,9 +237,9 @@ class _SearchScreenState extends State<SearchScreen> {
                                                         height: 200,
                                                         width: 200,
                                                         color: Colors.grey[200],
-                                                        child: const Center(
-                                                          child:
-                                                              CircularProgressIndicator(),
+                                                        child: Center(
+                                                          child: Text(
+                                                              l10n.loading),
                                                         ),
                                                       );
                                                     },
