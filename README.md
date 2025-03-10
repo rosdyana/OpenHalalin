@@ -1,12 +1,13 @@
-# HalalApp
+# OpenHalalin
 
-HalalApp is a Flutter-based mobile application designed to help users find and verify halal products. The app aims to make it easier for Muslims to make informed decisions about their food and product choices. The idea of this app is to share with fellow Muslims to build their own assistant since some apps in the market are not free.
+OpenHalalin is a Flutter-based mobile application designed to help users find and verify halal products. The app aims to make it easier for Muslims to make informed decisions about their food and product choices. The idea of this app is to share with fellow Muslims to build their own assistant with zero cost. The app is open-source and free to use.
 
 ## Features
 
 - Prayer Time - Get the prayer times for your location. We are using adhan:dart package.
 - Halal Scanner - Scan the barcode of a product to check if it is halal or not. We are using the Gemini API for ingredient analysis.
 - Muslim Bot - Chat with the Muslim Bot to ask questions about halal products and ingredients. We are using the Gemini API for the chatbot.
+- Multi-Language Support - The app supports multiple languages, including English, Bahasa Indonesia, Deutsch, Spanish, Italian, Japanese, Korean, Nederlands, Portugese, Russian, Vietnamese, and Traditional Chinese.
 
 ## Getting Started
 
