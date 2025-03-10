@@ -10,7 +10,7 @@ import 'package:halalapp/services/gemini_service.dart';
 import 'package:halalapp/services/cloudinary_service.dart';
 import 'package:halalapp/widgets/custom_button.dart';
 import 'package:halalapp/widgets/custom_text_field.dart';
-import 'package:halalapp/screens/search_screen.dart';
+import 'package:halalapp/screens/home_screen.dart';
 
 class ProductFormScreen extends StatefulWidget {
   final String barcode;
@@ -290,10 +290,10 @@ class _ProductFormScreenState extends State<ProductFormScreen> {
           ),
         );
 
-        // Replace with widget-based navigation
+        // Replace with HomeScreen navigation and set initial tab to search
         Navigator.of(context).pushAndRemoveUntil(
           MaterialPageRoute(
-            builder: (context) => const SearchScreen(),
+            builder: (context) => const HomeScreen(initialTab: 2),
           ),
           (route) => false,
         );

@@ -7,14 +7,19 @@ import 'package:halalapp/screens/profile_screen.dart';
 import 'package:halalapp/screens/prayer_time_screen.dart';
 
 class HomeScreen extends StatefulWidget {
-  const HomeScreen({super.key});
+  final int initialTab;
+
+  const HomeScreen({
+    super.key,
+    this.initialTab = 0,
+  });
 
   @override
   State<HomeScreen> createState() => _HomeScreenState();
 }
 
 class _HomeScreenState extends State<HomeScreen> {
-  int _selectedIndex = 0;
+  late int _selectedIndex;
   final AuthService _authService = AuthService();
 
   final List<Widget> _screens = [
@@ -24,6 +29,12 @@ class _HomeScreenState extends State<HomeScreen> {
     const ChatbotScreen(),
     const ProfileScreen(),
   ];
+
+  @override
+  void initState() {
+    super.initState();
+    _selectedIndex = widget.initialTab;
+  }
 
   @override
   Widget build(BuildContext context) {
