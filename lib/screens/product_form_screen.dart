@@ -10,6 +10,7 @@ import 'package:halalapp/services/gemini_service.dart';
 import 'package:halalapp/services/cloudinary_service.dart';
 import 'package:halalapp/widgets/custom_button.dart';
 import 'package:halalapp/widgets/custom_text_field.dart';
+import 'package:halalapp/screens/search_screen.dart';
 
 class ProductFormScreen extends StatefulWidget {
   final String barcode;
@@ -289,11 +290,12 @@ class _ProductFormScreenState extends State<ProductFormScreen> {
           ),
         );
 
-        // Replace current screen with search screen
-        Navigator.pushNamedAndRemoveUntil(
-          context,
-          '/search', // or whatever your search route name is
-          (route) => false, // This removes all previous routes
+        // Replace with widget-based navigation
+        Navigator.of(context).pushAndRemoveUntil(
+          MaterialPageRoute(
+            builder: (context) => const SearchScreen(),
+          ),
+          (route) => false,
         );
       }
     } catch (e, stackTrace) {

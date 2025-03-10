@@ -81,7 +81,8 @@ class _SearchScreenState extends State<SearchScreen> {
                       child: ListTile(
                         leading: product.imageUrl != null
                             ? CircleAvatar(
-                                backgroundImage: NetworkImage(product.imageUrl!),
+                                backgroundImage:
+                                    NetworkImage(product.imageUrl!),
                               )
                             : const CircleAvatar(
                                 child: Icon(Icons.fastfood),
@@ -89,12 +90,8 @@ class _SearchScreenState extends State<SearchScreen> {
                         title: Text(product.name),
                         subtitle: Text(product.description),
                         trailing: Icon(
-                          product.isHalal
-                              ? Icons.check_circle
-                              : Icons.cancel,
-                          color: product.isHalal
-                              ? Colors.green
-                              : Colors.red,
+                          product.isHalal ? Icons.check_circle : Icons.cancel,
+                          color: product.isHalal ? Colors.green : Colors.red,
                         ),
                         onTap: () {
                           showDialog(
@@ -103,7 +100,8 @@ class _SearchScreenState extends State<SearchScreen> {
                               child: Container(
                                 width: MediaQuery.of(context).size.width * 0.9,
                                 constraints: BoxConstraints(
-                                  maxHeight: MediaQuery.of(context).size.height * 0.8,
+                                  maxHeight:
+                                      MediaQuery.of(context).size.height * 0.8,
                                 ),
                                 child: Column(
                                   mainAxisSize: MainAxisSize.min,
@@ -119,33 +117,42 @@ class _SearchScreenState extends State<SearchScreen> {
                                       child: SingleChildScrollView(
                                         padding: const EdgeInsets.all(16),
                                         child: Column(
-                                          crossAxisAlignment: CrossAxisAlignment.start,
+                                          crossAxisAlignment:
+                                              CrossAxisAlignment.start,
                                           children: [
                                             if (product.imageUrl != null) ...[
                                               Center(
                                                 child: ClipRRect(
-                                                  borderRadius: BorderRadius.circular(8),
+                                                  borderRadius:
+                                                      BorderRadius.circular(8),
                                                   child: Image.network(
                                                     product.imageUrl!,
                                                     height: 200,
                                                     width: 200,
                                                     fit: BoxFit.cover,
-                                                    errorBuilder: (context, error, stackTrace) {
+                                                    errorBuilder: (context,
+                                                        error, stackTrace) {
                                                       return Container(
                                                         height: 200,
                                                         width: 200,
                                                         color: Colors.grey[200],
-                                                        child: const Icon(Icons.error_outline, size: 40),
+                                                        child: const Icon(
+                                                            Icons.error_outline,
+                                                            size: 40),
                                                       );
                                                     },
-                                                    loadingBuilder: (context, child, loadingProgress) {
-                                                      if (loadingProgress == null) return child;
+                                                    loadingBuilder: (context,
+                                                        child,
+                                                        loadingProgress) {
+                                                      if (loadingProgress ==
+                                                          null) return child;
                                                       return Container(
                                                         height: 200,
                                                         width: 200,
                                                         color: Colors.grey[200],
                                                         child: const Center(
-                                                          child: CircularProgressIndicator(),
+                                                          child:
+                                                              CircularProgressIndicator(),
                                                         ),
                                                       );
                                                     },
@@ -156,27 +163,38 @@ class _SearchScreenState extends State<SearchScreen> {
                                             ],
                                             Text(
                                               'Brand: ${product.brand}',
-                                              style: const TextStyle(fontSize: 16),
+                                              style:
+                                                  const TextStyle(fontSize: 16),
                                             ),
                                             const SizedBox(height: 8),
                                             Container(
-                                              padding: const EdgeInsets.symmetric(
+                                              padding:
+                                                  const EdgeInsets.symmetric(
                                                 horizontal: 12,
                                                 vertical: 6,
                                               ),
                                               decoration: BoxDecoration(
-                                                color: product.isHalal ? Colors.green[50] : Colors.red[50],
-                                                borderRadius: BorderRadius.circular(4),
+                                                color: product.isHalal
+                                                    ? Colors.green[50]
+                                                    : Colors.red[50],
+                                                borderRadius:
+                                                    BorderRadius.circular(4),
                                               ),
                                               child: Text(
-                                                product.isHalal ? '✅ Halal' : '❌ Not Halal',
+                                                product.isHalal
+                                                    ? '✅ Halal'
+                                                    : '❌ Not Halal',
                                                 style: TextStyle(
-                                                  color: product.isHalal ? Colors.green[700] : Colors.red[700],
+                                                  color: product.isHalal
+                                                      ? Colors.green[700]
+                                                      : Colors.red[700],
                                                   fontWeight: FontWeight.bold,
                                                 ),
                                               ),
                                             ),
-                                            if (product.isHalal && product.halalCertificateUrl != null) ...[
+                                            if (product.isHalal &&
+                                                product.halalCertificateUrl !=
+                                                    null) ...[
                                               const SizedBox(height: 16),
                                               const Text(
                                                 'Halal Certificate:',
@@ -188,28 +206,37 @@ class _SearchScreenState extends State<SearchScreen> {
                                               const SizedBox(height: 8),
                                               Center(
                                                 child: ClipRRect(
-                                                  borderRadius: BorderRadius.circular(8),
+                                                  borderRadius:
+                                                      BorderRadius.circular(8),
                                                   child: Image.network(
-                                                    product.halalCertificateUrl!,
+                                                    product
+                                                        .halalCertificateUrl!,
                                                     height: 200,
                                                     width: 200,
                                                     fit: BoxFit.cover,
-                                                    errorBuilder: (context, error, stackTrace) {
+                                                    errorBuilder: (context,
+                                                        error, stackTrace) {
                                                       return Container(
                                                         height: 200,
                                                         width: 200,
                                                         color: Colors.grey[200],
-                                                        child: const Icon(Icons.error_outline, size: 40),
+                                                        child: const Icon(
+                                                            Icons.error_outline,
+                                                            size: 40),
                                                       );
                                                     },
-                                                    loadingBuilder: (context, child, loadingProgress) {
-                                                      if (loadingProgress == null) return child;
+                                                    loadingBuilder: (context,
+                                                        child,
+                                                        loadingProgress) {
+                                                      if (loadingProgress ==
+                                                          null) return child;
                                                       return Container(
                                                         height: 200,
                                                         width: 200,
                                                         color: Colors.grey[200],
                                                         child: const Center(
-                                                          child: CircularProgressIndicator(),
+                                                          child:
+                                                              CircularProgressIndicator(),
                                                         ),
                                                       );
                                                     },
@@ -217,21 +244,27 @@ class _SearchScreenState extends State<SearchScreen> {
                                                 ),
                                               ),
                                             ],
-                                            if (!product.isHalal && product.nonHalalReason != null) ...[
+                                            if (!product.isHalal &&
+                                                product.nonHalalReason !=
+                                                    null) ...[
                                               const SizedBox(height: 16),
                                               Container(
-                                                padding: const EdgeInsets.all(12),
+                                                padding:
+                                                    const EdgeInsets.all(12),
                                                 decoration: BoxDecoration(
                                                   color: Colors.red[50],
-                                                  borderRadius: BorderRadius.circular(8),
+                                                  borderRadius:
+                                                      BorderRadius.circular(8),
                                                 ),
                                                 child: Column(
-                                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                                  crossAxisAlignment:
+                                                      CrossAxisAlignment.start,
                                                   children: [
                                                     const Text(
                                                       'Reason:',
                                                       style: TextStyle(
-                                                        fontWeight: FontWeight.bold,
+                                                        fontWeight:
+                                                            FontWeight.bold,
                                                         fontSize: 16,
                                                       ),
                                                     ),
@@ -255,13 +288,17 @@ class _SearchScreenState extends State<SearchScreen> {
                                               ),
                                             ),
                                             const SizedBox(height: 8),
-                                            ...product.ingredients.map((ingredient) => Padding(
-                                              padding: const EdgeInsets.only(bottom: 4),
-                                              child: Text(
-                                                '• $ingredient',
-                                                style: const TextStyle(fontSize: 14),
-                                              ),
-                                            )),
+                                            ...product.ingredients
+                                                .map((ingredient) => Padding(
+                                                      padding:
+                                                          const EdgeInsets.only(
+                                                              bottom: 4),
+                                                      child: Text(
+                                                        '• $ingredient',
+                                                        style: const TextStyle(
+                                                            fontSize: 14),
+                                                      ),
+                                                    )),
                                           ],
                                         ),
                                       ),
@@ -289,4 +326,4 @@ class _SearchScreenState extends State<SearchScreen> {
     _searchController.dispose();
     super.dispose();
   }
-} 
+}
