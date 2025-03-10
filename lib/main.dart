@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
+import 'package:halalapp/screens/auth/register_screen.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:halalapp/firebase_options.dart';
@@ -50,7 +51,7 @@ class MyApp extends StatelessWidget {
       child: Consumer<LanguageProvider>(
         builder: (context, languageProvider, child) {
           return MaterialApp(
-            title: 'HalalApp',
+            title: 'OpenHalalin',
             theme: ThemeData(
               colorScheme: ColorScheme.fromSeed(seedColor: Colors.green),
               useMaterial3: true,
@@ -76,6 +77,10 @@ class MyApp extends StatelessWidget {
               Locale('nl', 'NL'), // Dutch
               Locale('vi', 'VN'), // Vietnamese
             ],
+            routes: {
+              '/register': (context) => const RegisterScreen(),
+              '/home': (context) => const HomeScreen(),
+            },
             home: StreamBuilder(
               stream: AuthService().authStateChanges,
               builder: (context, snapshot) {
